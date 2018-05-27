@@ -4,7 +4,6 @@
 
 # Site
 title: Jiananshi's Blog
-subtitle: </>
 author: jiananshi
 language:
 timezone:
@@ -20,7 +19,7 @@ permalink_defaults:
 
 # Site settings
 SEOTitle: jiananshi
-header-img: img/home-bg.jpg
+header-img: https://oiw32lugp.qnssl.com/bg%20%281%29.jpeg
 email: klamtine@gmail.com
 description: ""
 keyword: ""
@@ -32,8 +31,6 @@ weibo_username:     sjnmichael
 zhihu_username:     katncandix2
 github_username:    jiananshi
 twitter_username:   jiananshi
-# facebook_username:  demonbane.cn
-# linkedin_username:  kaijun-chen-42089354
 
 # Build settings
 anchorjs: true                          # if you want to customize anchor. check out line:181 of `post.html`
@@ -53,7 +50,7 @@ duoshuo_share: false                     # set to false if you want to use Comme
 # ba_track_id: 4cc1f2d8f3067386cc5cdb626a202900
 # Google Analytics
 # ga_track_id: 'UA-49627206-1'            # Format: UA-xxxxxx-xx
-ga_domain: jiananshi.com
+ga_domain: shijianan.com
 
 
 # Sidebar settings

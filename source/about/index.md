@@ -3,8 +3,8 @@ layout: "about"
 title: "About"
 date: 2016-04-21 04:48:33
 description: ""
-header-img: "img/home-bg.jpg"
-comments: true
 ---
 
-{{ placeholder }}
+11 年大学就读于重庆的一个三本院校，因家人期望就读金融专业（因为当年前景好 && 家里在银行有熟人），读了两年以后肄业，多亏在校期间接触的网易公开课（CS50）和 Codecademy 在南京一家创业公司找了份工作就此开始从事互联网行业。
+
+目前在上海送外卖，有什么有意思的想法或者想来一起工作私戳我：klamtine#gmail.com
