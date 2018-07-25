@@ -8,26 +8,28 @@ tags:
 
 ## Debounce
 
-debounce 是指给定一个时间，只有过了这个时间才会执行这个函数，这期间调用这个函数会重置计时器。实现上也非常简单：
+debounce 是指给定一个时间，只有过了这个时间才会执行这个函数，这期间调用这个函数会重置计时器（并清除上一个任务）：
 
 ```javascript
-function debounce(func, delay=0) {
-  let timer;
+function debounce(func, delay = 0, immediate) {
+  let timer;
 
-  function debounced() {
-    return setTimeout(_ => {
-      func();
-      timer = null;
-    }, delay);
-  }
- 
-  return function() {
-    if (timer) {
-      clearTimeout(timer);
-    }
+  function execute(...args) {
+    timer = setTimeout(() => {
+      func(...args);
+      timer = null;
+    }, delay);
+  }
 
-    timer = debounced(); 
-  };
+  return (...args) => {
+    if (timer) {
+      clearTimeout(timer);
+      execute(...args);
+    } else {
+      if (immediate) return func(...args);
+      execute(...args);
+    }
+  };
 }
 ```
 
@@ -39,14 +41,25 @@ Throttle，给定一个窗口时间，在这个窗口期内最多只能被执行
 
 ```javascript
 function throttle(func, wait) {
-  let timer;
+  let timer;
+  let previous = 0;
 
-  return function() {
-    if (timer) return;
+  return (...args) => {
+    const now = Date.now();
+    const remaining = now - (previous + wait);
 
-    func();
-    timer = setTimeout(_ => timer = null, wait);
-  };
+    if (remaining > 0) {
+      func(...args);
+      previous = now;
+    } else {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        func(...args);
+        previous = now;
+        timer = null;
+      }, wait);
+    }
+  };
 }
 ```
 
