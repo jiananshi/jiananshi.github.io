@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="小森林，Web">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>
+        
+          jiananshi
+        
+    </title>
+
+    <link rel="canonical" href="https://shijianan.com/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">小森林</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archives/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $ = document.querySelector;
+    var $toggle = $('.navbar-toggle');
+    var $navbar = $('#huxblog_navbar');
+    var $collapse = $('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    <!-- Page Header -->
+
+    <header class="intro-header" style="background-image: url('///pic.yupoo.com/jiananshi/7f720625/9c9c26ad.jpg')">
+
+    <div class="container">
+        <h1></h1>
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 ">
+                <div class="site-heading">
+                    <h1>小森林</h1>
+                    <!--<hr class="small">-->
+                    <span class="subheading"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+<!-- Main Content -->
+<div class="container">
+    <div class="row">
+        
+
+<!-- USE SIDEBAR -->
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-1
+                col-md-8 col-md-offset-1
+                col-sm-12
+                col-xs-12
+                post-container
+            ">
+
+                <!-- Main Content -->
+
+
+<div class="post-preview">
+
+    <a href="/2019/02/19/shizhiyuhe/">
+        <h2 class="post-title">
+            与是枝裕和达成和解
+        </h2>
+        <h3 class="post-subtitle">
+            
+        </h3>
+        <div class="post-content-preview">
+            最早听到是枝裕和这个名字是在七月份的某天觉得很无聊，于是和 gogu 说一起倒着刷豆瓣电影 250 吧，彼时海街日记还将将够着 250 榜单的最后一名（今天看已经排到 198 了，多半是随着小偷家族上映带来的热度吧 2019.2.19），只记得片子节奏很缓，断断续续看了两天（成年后养成的一个不好的习惯，在家看电影很容易中途做别的事），只记得广濑铃很 かわいい，当时的我连长泽雅美都不认识呢，至......
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by jiananshi on
+        2019-02-19
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+
+    <a href="/2018/07/29/howto-bind-eventhandler-in-react/">
+        <h2 class="post-title">
+            如何在 React 中绑定一个事件处理函数
+        </h2>
+        <h3 class="post-subtitle">
+            
+        </h3>
+        <div class="post-content-preview">
+            这篇文章的起因是最近看到同事的在处理一个可以响应用户交互需求时的代码：
+1234567891011import React from 'react';class App extends React.Component &#123;  render() &#123;    return (        &lt;button onClick=&#123;() =&gt; alert('Clic......
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by jiananshi on
+        2018-07-29
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+
+    <a href="/2018/03/29/http-response-splitting/">
+        <h2 class="post-title">
+            HTTP Response Splitting
+        </h2>
+        <h3 class="post-subtitle">
+            
+        </h3>
+        <div class="post-content-preview">
+            前阵子安全部门报过来了一个非常有意思的漏洞，在我们支持 HTTPS 后，HTTP 访问都会被 301 到 HTTPS，在服务端配置如下：
+12345server &#123;  # ...  server_name example.com;  return 302 https://$host$request_uri;&#125;
+乍一看是非常简单的配置，但其中有一个容易忽视的地方是，我们直接......
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by jiananshi on
+        2018-03-29
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+
+    <a href="/2018/02/22/keepalive-intro/">
+        <h2 class="post-title">
+            keepalive 简介
+        </h2>
+        <h3 class="post-subtitle">
+            
+        </h3>
+        <div class="post-content-preview">
+            
+前端关注的 keep-alive如果你关注过「缓存」这件事，写前端的时候一定会注意到诸如：Cache-control / etag / connection… 诸如此类的 HTTP 头，如下图所示：
+
+（注：keep-alive 属于 HTTP/1.1 的内容，h5.ele.me 很多资源上了 h2，这里特意选了一个 HTTP/1.1 的请求做例子）
+我们都知道 HTTP 请求是很昂贵的，......
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by jiananshi on
+        2018-02-22
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+
+    <a href="/2017/11/23/flexbox-faq/">
+        <h2 class="post-title">
+            Flex 的一些常见问题
+        </h2>
+        <h3 class="post-subtitle">
+            
+        </h3>
+        <div class="post-content-preview">
+            记得 Flexbox 刚刚开始有人用时，除了兼容性问题大家一致觉得这个特性节省了前端写页面的时间，记得移动端的美食墙（目前已经这个功能已经下线了）就是利用了 Flex 可以在垂直方向上排列元素的特性来写的。使用 Flexbox 免去了往常写 float 要处理高度坍塌，有的场景要考虑到 BFC（Flex container 本身会创建一个 FFC - Flex Formatting Cont......
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by jiananshi on
+        2017-11-23
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+
+    <a href="/2017/08/02/mongodb-normalization/">
+        <h2 class="post-title">
+            如何设计 Mongodb 的数据模型
+        </h2>
+        <h3 class="post-subtitle">
+            
+        </h3>
+        <div class="post-content-preview">
+            公司的存储服务上线后，我遇到过很多次使用 MySQL 的表设计模式来设计 Mongodb 存储模型的服务，并在服务拓展后遇到 Mongodb 不支持数据库级别的 join 而觉得它不好用的情况（其他还有如事务、外键等等）。
+在使用了一段时间 Mongodb 后，我觉得这些评价是有失公允的，Mongodb 有它适应的场景，不应该处处同 MySQL 比较。比如不支持 join 我们可以通过应用级......
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by jiananshi on
+        2017-08-02
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+
+    <a href="/2017/07/15/xss/">
+        <h2 class="post-title">
+            什么是 XSS 攻击
+        </h2>
+        <h3 class="post-subtitle">
+            
+        </h3>
+        <div class="post-content-preview">
+            XSS 的全称是 Cross Site Scripting，为了避免同 CSS 的缩写重复所以用了 XSS 代替，相比于上一篇介绍的 CSRF 攻击，XSS 攻击的威力更大，它可以直接在用户当前正在浏览的页面运行自定义的 javascript 脚本，操作得当的话可以污染浏览这个页面的所有用户。
+XSS 最主要的方式是通过服务端没有对用户上传的内容进行 编码/过滤，然后直接返回给客户端并展示在......
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by jiananshi on
+        2017-07-15
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+
+    <a href="/2017/07/08/csrf/">
+        <h2 class="post-title">
+            如何防范 CSRF 攻击
+        </h2>
+        <h3 class="post-subtitle">
+            
+        </h3>
+        <div class="post-content-preview">
+            CSRF 的全称是 Cross-site request forgery，中文翻译是跨站请求伪造，简单来说就是用户在登录 A 站点后假冒用户向站点 B 发送请求，如退出用户当前帐号等操作。
+下面这张图可以解释 CSRF 攻击的原理：
+
+用户访问站点 A 时，站点 A 用一个图片 html 标签就可以发起 CSRF 攻击：
+1&lt;img src="//yemengying.com/logo......
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by jiananshi on
+        2017-07-08
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+
+    <a href="/2017/07/01/http-xff/">
+        <h2 class="post-title">
+            HTTP 头 X-FORWARDED-FOR
+        </h2>
+        <h3 class="post-subtitle">
+            
+        </h3>
+        <div class="post-content-preview">
+            Disqus 被墙以后配置了一个反向代理去调 Disqus api，那个服务到现在运行的还不错，美中不足的是经过了一层反向代理后我们丢掉了用户的 IP 信息，最终提交给 Disqus 的只有转发服务器的 IP，这样所有用户的请求都来自于同一个 IP，假如要展示访客地区分布就捉🐔了。
+反向代理对于用户来说是透明的，客户端并不知道这个接口后面有几层代理，而最后一层代理甚至有可能不知道真实用户的......
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by jiananshi on
+        2017-07-01
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+
+    <a href="/2017/06/24/wrk/">
+        <h2 class="post-title">
+            小巧好用的压力测试工具 wrk
+        </h2>
+        <h3 class="post-subtitle">
+            
+        </h3>
+        <div class="post-content-preview">
+            上周服务被打挂了一次，发现的时候 CPU + Memory 几乎被占满，但是请求并发量只有 ~50 左右。修复 + 重启以后一直在想平时怎么在日常自测服务，压力测试需要联系公司专门的团队 + 排期并不十分方便，佳浩老师给推荐了 wrk，这里记录一下使用心得。
+wrk 的官网关于用法介绍的挺详细的，这里就只简单举一个例子：
+1wrk -t4 -c100 -d10s -T30s --latenc......
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by jiananshi on
+        2017-06-24
+    </p>
+
+</div>
+<hr>
+
+
+
+<!-- Pager -->
+
+<ul class="pager">
+    
+    
+        <li class="next">
+            <a href="/page/2/">Older Posts &rarr;</a>
+        </li>
+    
+</ul>
+
+
+
+                <!-- 如果开启评论功能 -->
+                
+
+            </div>
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-3 col-lg-offset-0
+                col-md-3 col-md-offset-0
+                col-sm-12
+                col-xs-12
+                sidebar-container
+            ">
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                            
+                        
+                            
+                        
+                            
+                            <a href="/tags/#security" title="security" rel="3">security</a>
+                            
+                        
+                            
+                            <a href="/tags/#css" title="css" rel="3">css</a>
+                            
+                        
+                            
+                        
+                            
+                            <a href="/tags/#javascript" title="javascript" rel="6">javascript</a>
+                            
+                        
+                            
+                        
+                            
+                            <a href="/tags/#https" title="https" rel="4">https</a>
+                            
+                        
+                            
+                        
+                            
+                            <a href="/tags/#http" title="http" rel="3">http</a>
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                            <a href="/tags/#nginx" title="nginx" rel="2">nginx</a>
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Short About -->
+                <section class="visible-md visible-lg">
+                    <hr><h5><a href="/about/">ABOUT ME</a></h5>
+                    <div class="short-about">
+
+                        
+                            <img src="/img/avatar.jpg" />
+                        
+
+                        
+
+                        <!-- SNS Link -->
+                        <ul class="list-inline">
+                            
+                            
+                                <li>
+                                    <a target="_blank" href="https://twitter.com/jiananshi">
+                                        <span class="fa-stack fa-lg">
+                                            <i class="fa fa-circle fa-stack-2x"></i>
+                                            <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                        </span>
+                                    </a>
+                                </li>
+                            
+                            
+
+                            
+
+                            
+
+                            
+                                <li>
+                                    <a target="_blank"  href="https://github.com/jiananshi">
+                                        <span class="fa-stack fa-lg">
+                                            <i class="fa fa-circle fa-stack-2x"></i>
+                                            <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                        </span>
+                                    </a>
+                                </li>
+                            
+
+
+                            
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="https://yemengying.com" target="_blank">Giraffe&#39;s Home</a></li>
+                    
+                </ul>
+                
+            </div>
+        
+    </div>
+</div>
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                    <li>
+                        <a target="_blank" href="https://twitter.com/jiananshi">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+                
+
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank"  href="https://github.com/jiananshi">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; 小森林 2019 
+                    <br>
+                    Theme by <a href="http://huangxuan.me">Hux</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    Ported by <a href="http://blog.kaijun.rocks">Kaijun</a> | 
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=kaijun&repo=hexo-theme-huxblog&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://shijianan.com/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- Side Catalog -->
+
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="https://shijianan.com/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

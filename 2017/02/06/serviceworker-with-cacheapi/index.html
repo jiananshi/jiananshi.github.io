@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="小森林，Web">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>
+        
+          ServiceWorker + Cache 的前端缓存方案 - jiananshi
+        
+    </title>
+
+    <link rel="canonical" href="https://shijianan.com/2017/02/06/serviceworker-with-cacheapi/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">小森林</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archives/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $ = document.querySelector;
+    var $toggle = $('.navbar-toggle');
+    var $navbar = $('#huxblog_navbar');
+    var $collapse = $('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    
+<!-- Image to hack wechat -->
+<!-- <img src="https://shijianan.com/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('///pic.yupoo.com/jiananshi/7f720625/9c9c26ad.jpg')
+        
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                          <a class="tag" href="/tags/#serviceworker cache javascript" title="serviceworker cache javascript">serviceworker cache javascript</a>
+                        
+                    </div>
+                    <h1>ServiceWorker + Cache 的前端缓存方案</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by jiananshi on
+                        2017-02-06
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <p>通过 ServiceWorker 可以拦截前端的请求，而 Cache 可以根据请求将响应存储在前端，那么这两者结合起来我们就可以实现一个前端的缓存方案了，这里我们来讨论一下具体的实现和几种缓存策略。</p>
+<h2 id="网络请求优先策略"><a href="#网络请求优先策略" class="headerlink" title="网络请求优先策略"></a>网络请求优先策略</h2><p><img src="http://oiw32lugp.qnssl.com/2017-02-06-%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202017-02-06%20%E4%B8%8B%E5%8D%8810.54.06.png" alt="strategy"><br>（图片来源：<a href="https://huangxuan.me/2016/11/20/sw-101-gdgdf/，侵删）" target="_blank" rel="external">https://huangxuan.me/2016/11/20/sw-101-gdgdf/，侵删）</a></p>
+<p>这个方案优先使用网络请求，网络请求失败后再从缓存中提取数据，记得在网络请求后及时更新缓存。不好的地方显而易见，并没有大幅提高用户体验和速度。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">self.addEventListener(<span class="string">'fetch'</span>, e =&gt; &#123;</div><div class="line">	e.respondWith(</div><div class="line">    fetch(e.request.url)</div><div class="line">		  .catch(<span class="function"><span class="params">e</span> =&gt;</span> &#123;</div><div class="line">         <span class="keyword">return</span> caches.match(e.request)</div><div class="line">				.then(<span class="function"><span class="params">res</span> =&gt;</span> res || e);</div><div class="line">       &#125;)</div><div class="line">  );</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<h2 id="缓存优先策略"><a href="#缓存优先策略" class="headerlink" title="缓存优先策略"></a>缓存优先策略</h2><p><img src="http://oiw32lugp.qnssl.com/2017-02-06-%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202017-02-06%20%E4%B8%8B%E5%8D%8810.56.33.png" alt="strategy"><br>（图片来源：<a href="https://huangxuan.me/2016/11/20/sw-101-gdgdf/，侵删）" target="_blank" rel="external">https://huangxuan.me/2016/11/20/sw-101-gdgdf/，侵删）</a></p>
+<p>这个策略优先使用缓存，缓存没有命中或失效才发送网络请求，这个方案会造成你的用户很难看到最新的响应，如果场景适合这个方案千万记得做好版本控制。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">self.addEventListener(<span class="string">'fetch'</span>, e =&gt; &#123;</div><div class="line">	e.respondWith(</div><div class="line">		caches.match(e.request.url)</div><div class="line">		  .then(<span class="function"><span class="params">res</span> =&gt;</span> res || fetch(e.request))</div><div class="line">	);</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<h2 id="请求和缓存竞赛"><a href="#请求和缓存竞赛" class="headerlink" title="请求和缓存竞赛"></a>请求和缓存竞赛</h2><p><img src="http://oiw32lugp.qnssl.com/2017-02-06-%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202017-02-06%20%E4%B8%8B%E5%8D%8811.00.59.png" alt="strategy"><br>（图片来源：<a href="https://huangxuan.me/2016/11/20/sw-101-gdgdf/，侵删）" target="_blank" rel="external">https://huangxuan.me/2016/11/20/sw-101-gdgdf/，侵删）</a></p>
+<p>这个方案在性能上胜于其他方案，只是要额外多一个操作，并且结果是不可控的。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">self.addEventListener(<span class="string">'fetch'</span>, e =&gt; &#123;</div><div class="line">	e.respondWith(</div><div class="line">	  <span class="built_in">Promise</span>.race([</div><div class="line">      fetch(e.request.url),</div><div class="line">      caches.match(e.request)</div><div class="line">	  ])</div><div class="line">	);</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<h2 id="超时后重新请求策略"><a href="#超时后重新请求策略" class="headerlink" title="超时后重新请求策略"></a>超时后重新请求策略</h2><p><img src="http://oiw32lugp.qnssl.com/2017-02-06-%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202017-02-06%20%E4%B8%8B%E5%8D%8811.10.38.png" alt="strategy"><br>（图片来源：<a href="https://huangxuan.me/2016/11/20/sw-101-gdgdf/，侵删）" target="_blank" rel="external">https://huangxuan.me/2016/11/20/sw-101-gdgdf/，侵删）</a></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">self.addEventListener(<span class="string">'fetch'</span>, e =&gt; &#123;</div><div class="line">  <span class="keyword">let</span> fetchData = fetch(<span class="string">`<span class="subst">$&#123; e.request.url &#125;</span>?<span class="subst">$&#123; <span class="built_in">Date</span>.now() &#125;</span>`</span>);</div><div class="line">  <span class="comment">// Request 是一个 Stream</span></div><div class="line">  <span class="keyword">let</span> _fetchData = fetchData.then(<span class="function"><span class="params">raw</span> =&gt;</span> raw.clone());</div><div class="line"></div><div class="line">	e.respondWith(</div><div class="line">	  caches.match(e.request)</div><div class="line">	    .then(<span class="function"><span class="params">res</span> =&gt;</span> res || fetchData)</div><div class="line">	);</div><div class="line"></div><div class="line">  e.waitUntil(</div><div class="line">    <span class="built_in">Promise</span>.all([</div><div class="line">      _fetchData,</div><div class="line">      caches.open(<span class="string">'test-1.0'</span>)</div><div class="line">    ]).then(<span class="function">(<span class="params">[res, cache]</span>) =&gt;</span> &#123;</div><div class="line">      <span class="keyword">if</span> (res.ok) cache.put(e.reqeust, res);</div><div class="line">    &#125;);</div><div class="line">  );</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<h2 id="最快的超时后重新请求策略"><a href="#最快的超时后重新请求策略" class="headerlink" title="最快的超时后重新请求策略"></a>最快的超时后重新请求策略</h2><p>其实就是结合竞速啦：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">self.addEventListener(<span class="string">'fetch'</span>, e =&gt; &#123;</div><div class="line">  <span class="keyword">let</span> fetchData = fetch(<span class="string">`<span class="subst">$&#123; e.request.url &#125;</span>?<span class="subst">$&#123; <span class="built_in">Date</span>.now() &#125;</span>`</span>);</div><div class="line">  <span class="comment">// Request 是一个 Stream</span></div><div class="line">  <span class="keyword">let</span> _fetchData = fetchData.then(<span class="function"><span class="params">raw</span> =&gt;</span> raw.clone());</div><div class="line"></div><div class="line">	e.respondWith(</div><div class="line">    <span class="built_in">Promise</span>.race([fetchData, caches.match(e.request)])</div><div class="line">	    .then(<span class="function"><span class="params">res</span> =&gt;</span> res || fetchData)</div><div class="line">	);</div><div class="line"></div><div class="line">  e.waitUntil(</div><div class="line">    <span class="built_in">Promise</span>.all([</div><div class="line">      _fetchData,</div><div class="line">      caches.open(<span class="string">'test-1.0'</span>)</div><div class="line">    ]).then(<span class="function">(<span class="params">[res, cache]</span>) =&gt;</span> &#123;</div><div class="line">      <span class="keyword">if</span> (res.ok) cache.put(e.reqeust, res);</div><div class="line">    &#125;);</div><div class="line">  );</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+
+
+                <hr>
+
+                
+
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/2017/02/07/cookie-domain/" data-toggle="tooltip" data-placement="top" title="Cookie：作用域匹配">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/2017/02/05/javascript-cache-api/" data-toggle="tooltip" data-placement="top" title="Javascript Cache API">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#serviceworker cache javascript" title="serviceworker cache javascript">serviceworker cache javascript</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="https://yemengying.com" target="_blank">Giraffe&#39;s Home</a></li>
+                    
+                </ul>
+                
+            </div>
+
+        </div>
+    </div>
+</article>
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "klamtine";
+    var disqus_identifier = "https://shijianan.com/2017/02/06/serviceworker-with-cacheapi/";
+    var disqus_url = "https://shijianan.com/2017/02/06/serviceworker-with-cacheapi/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                    <li>
+                        <a target="_blank" href="https://twitter.com/jiananshi">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+                
+
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank"  href="https://github.com/jiananshi">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; 小森林 2019 
+                    <br>
+                    Theme by <a href="http://huangxuan.me">Hux</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    Ported by <a href="http://blog.kaijun.rocks">Kaijun</a> | 
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=kaijun&repo=hexo-theme-huxblog&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://shijianan.com/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- Side Catalog -->
+
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="https://shijianan.com/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>
