@@ -130,4 +130,4 @@ theme: huxblog
 deploy:
   type: git
   repo: git@github.com:jiananshi/jiananshi.github.io
-  branch: gh-pages
+  branch: master
