@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="小森林，Web">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>
+        
+          「译」探索 ECMAScript Decorators - jiananshi
+        
+    </title>
+
+    <link rel="canonical" href="https://shijianan.com/2017/01/07/javascript-decorator/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">小森林</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archives/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $ = document.querySelector;
+    var $toggle = $('.navbar-toggle');
+    var $navbar = $('#huxblog_navbar');
+    var $collapse = $('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    
+<!-- Image to hack wechat -->
+<!-- <img src="https://shijianan.com/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('///pic.yupoo.com/jiananshi/7f720625/9c9c26ad.jpg')
+        
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                    </div>
+                    <h1>「译」探索 ECMAScript Decorators</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by jiananshi on
+                        2017-01-07
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <p>原文来自 Addy Osmani 发布于 Medium 的：<a href="https://medium.com/google-developers/exploring-es7-decorators-76ecb65fb841#.dlq1mmpup" target="_blank" rel="external">Exploring ECMAScript Decorators</a></p>
+<p>Iterators，generators 和 array comprehensions；我很激动看到 Javascript 和 Python 越来越像了，今天我们来讨论一下下一个 “很 Python” 的提案 —— Decorators。</p>
+<p>（7 月 29 日更新：）Decorators 已经在 TC39 中了，最新的状态可以在<a href="https://github.com/tc39/proposal-decorators" target="_blank" rel="external">这个 Repo</a> 里查看，代码示例也<a href="http://tc39.github.io/proposal-decorators/" target="_blank" rel="external">更新</a>了。</p>
+<h2 id="Decorator-的语法"><a href="#Decorator-的语法" class="headerlink" title="Decorator 的语法"></a>Decorator 的语法</h2><p>Decorators 究竟是什么？在 Python 中，decorators 为调用<a href="https://en.wikipedia.org/wiki/Higher-order_function" target="_blank" rel="external">高阶函数</a>提供了简洁的语法，它接收另一个函数作为参数并拓展它的功能，这一切的发生都不需要涉及去修改作为参数的函数。</p>
+<p><img src="http://oiw32lugp.qnssl.com/2017-01-08-011543.jpg" alt="decorator code"></p>
+<p><code>@</code> 符号会让编译器知道：我们要使用名字是 <code>mydecorator</code> 的 decorator 了，我们的 decorator 接受一个参数(myfunc)并且返回同样的函数，区别在于返回的函数多了一点功能。</p>
+<p>Decorators 非常适用于鉴定权限，打日志，限流等等你不希望手动写到逻辑里的功能。</p>
+<h2 id="ES5-和-ES6-中的-Decorators"><a href="#ES5-和-ES6-中的-Decorators" class="headerlink" title="ES5 和 ES6 中的 Decorators"></a>ES5 和 ES6 中的 Decorators</h2><p>在 ES5 中实现命令式声明的 decorator 很简单，在 ES2015 中 class 支持拓展，当多个 class 需要共享某个同样的功能时，我们需要一种更好的分发方式。</p>
+<p>Yehuda 关于 decorators 的提案为了保持声明式的语法，允许 Decorators 修改 Javascript 的类，属性和对象字面量。</p>
+<h2 id="在-ES2016-中使用-Decorators"><a href="#在-ES2016-中使用-Decorators" class="headerlink" title="在 ES2016 中使用 Decorators"></a>在 ES2016 中使用 Decorators</h2><p>在 ES2016 中，Decorator 是一个表达式，它返回一个函数并且它的参数有：target，name 和 property descriptor，通过在属性或类上添加一个 <code>@</code> 符号开头的表达式来使用它。</p>
+<h3 id="Decorate-一个属性"><a href="#Decorate-一个属性" class="headerlink" title="Decorate 一个属性"></a>Decorate 一个属性</h3><p>我们一起来看一个简单的 Cat 类：</p>
+<p><img src="http://oiw32lugp.qnssl.com/2017-01-09-013913.jpg" alt="code"></p>
+<p>执行这个类会将函数 <code>meow</code> 设置到 <code>Cat.prototype</code> 上，类似下面这段代码：</p>
+<p><img src="http://oiw32lugp.qnssl.com/2017-01-09-015413.jpg" alt="code"></p>
+<p>假设我们现在想让一个属性或者方法是只读的，我们可以定义一个 <code>@readonly</code> 的 decorator：</p>
+<p><img src="http://oiw32lugp.qnssl.com/2017-01-09-015535.jpg" alt="code"></p>
+<p>然后将它添加到我们的 meow 属性上：</p>
+<p><img src="http://oiw32lugp.qnssl.com/2017-01-09-015613.jpg" alt="code"></p>
+<p>Decorator 只是一个返回函数的表达式，因此 <code>@readonly</code> 和 <code>@something(parameter)</code> 两种写法都可以。</p>
+<p>那么现在回到我们之前的代码，在将 descriptor 设置到 <code>Cat.prototype</code> 上之前，JS 引擎首先会执行 decorator：</p>
+<p><img src="http://oiw32lugp.qnssl.com/2017-01-09-015928.jpg" alt="code"></p>
+<p>下面我们来验证一下 meow 是否是一个只读的方法：</p>
+<p><img src="http://oiw32lugp.qnssl.com/2017-01-09-020023.jpg" alt="code"></p>
+<p>我们很快会讨论到在 class 上使用 decorator，在那之前让我们先看一下 decorator 相关的库，Jay Phelps 的 <a href="https://github.com/jayphelps/core-decorators.js" target="_blank" rel="external">https://github.com/jayphelps/core-decorators.js</a> 已经包含了很多实用的 decorators 了。</p>
+<p>它通过 import 的方式引入了自己实现的 <code>@readonly</code>：</p>
+<p><img src="http://oiw32lugp.qnssl.com/2017-01-09-020719.jpg" alt="code"></p>
+<p>它还包含比如 <code>@deprecate</code> 等其他 decorators，它会在你调用这个废弃的方法时提醒你：</p>
+<blockquote>
+<p>你可以传入一个自定义的 message，还可以传入一个 url 给 hash 参数，最终调用这个方法时会通过 <code>console.warn</code> 将它们展示出来</p>
+</blockquote>
+<p><img src="http://oiw32lugp.qnssl.com/2017-01-09-020841.jpg" alt="code"></p>
+<h3 id="Decorate-一个-Class"><a href="#Decorate-一个-Class" class="headerlink" title="Decorate 一个 Class"></a>Decorate 一个 Class</h3><p>根据提案的规范，decorator 接收目标的 constructor 作为参数，这里我们定义一个 <code>MySuperHero</code> 的类，我们可以为他定义一个简单的 <code>@superhero</code> decorator：</p>
+<p><img src="http://oiw32lugp.qnssl.com/2017-01-09-151246.jpg" alt="code"></p>
+<p>我们可以通过使用参数来进一步拓展它：</p>
+<p><img src="http://oiw32lugp.qnssl.com/2017-01-09-151354.jpg" alt="code"></p>
+<p>在 ES2016 中，decorators 既可以在类上也可以在属性上使用，它们会自动获得属性名和目标对象，获取 descriptor 可以让 decorator 做很多事，比如使用 getter、在第一次访问属性时做一次 bind 等等。</p>
+<h2 id="ES2016-Decorators-和-Mixins"><a href="#ES2016-Decorators-和-Mixins" class="headerlink" title="ES2016 Decorators 和 Mixins"></a>ES2016 Decorators 和 Mixins</h2><p>我从头到尾读了一遍 Reg Braithwaite 的 <a href="http://raganwald.com/2015/06/26/decorators-in-es7.html" target="_blank" rel="external">ES2016 Decorators as mixins</a> 和之前发表的 <a href="http://raganwald.com/2015/06/17/functional-mixins.html" target="_blank" rel="external">Functional Mixins</a>。Reg 提出了用一个 helper 函数将功能同任何目标混合，这个函数看起来就像下图里的样子：</p>
+<p><img src="http://oiw32lugp.qnssl.com/2017-01-09-152723.jpg" alt="code"></p>
+<p>现在我们可以定义一些 mixins 并且用它们去 decorate 别的 Class，现在假设我们有一个 <code>ComicBookCharacter</code> 类：</p>
+<p><img src="http://oiw32lugp.qnssl.com/2017-01-09-152825.jpg" alt="code"></p>
+<p>目前看起来它没什么卵用，接下来我们用 Reg 的 mixin 来为它定义两个功能：</p>
+<p><img src="http://oiw32lugp.qnssl.com/2017-01-09-152921.jpg" alt="code"></p>
+<p>接下来我们可以用 decorator 来 decorate <code>ComicBookCharacter</code> 了（注意这里我们使用了两个 decorator）：</p>
+<p><img src="http://oiw32lugp.qnssl.com/2017-01-09-153043.jpg" alt="code"></p>
+<p>最后我们来创建一个 <code>Batman</code> 的实例：</p>
+<p><img src="http://oiw32lugp.qnssl.com/2017-01-09-153118.jpg" alt="code"></p>
+<h2 id="通过-Babel-使用-decorators"><a href="#通过-Babel-使用-decorators" class="headerlink" title="通过 Babel 使用 decorators"></a>通过 Babel 使用 decorators</h2><p>遗憾的是，Decorators 目前仍处于提案阶段，所以并不能直接编译。谢天谢地，Babel 在某种开发模式中支持编译 Decorators，所以这篇文章中大部分例子都可以直接运行。</p>
+<p><code>$ babel --optional es7.decorators</code></p>
+<p>或者可以使用一个 transformer:</p>
+<p><img src="http://oiw32lugp.qnssl.com/2017-01-09-153440.jpg" alt="code"></p>
+<p>Babel 还有一个在线的 <a href="https://babeljs.io/repl/" target="_blank" rel="external">online Babel REPL</a>，点击 “Experimental” 就可以激活 decorators 功能。</p>
+<h2 id="额外的实验"><a href="#额外的实验" class="headerlink" title="额外的实验"></a>额外的实验</h2><p>我有幸同 Paul Lewis 成为同事，他在<a href="https://github.com/GoogleChrome/samples/tree/gh-pages/decorators-es7/read-write" target="_blank" rel="external">尝试</a>应用 decorators 重新规划 DOM 读写的顺序。它的灵感来源于 Wilson Page 的 FastDOM 库，只不过提供了更简洁的 API。Paul 的 decorators 还会在你在 @write 中调用方法或获取属性，或者在 @read 中操作 DOM 的时候发出一个警告。</p>
+<p>下面是 Paul 想法的一个例子：</p>
+<p><img src="http://oiw32lugp.qnssl.com/2017-01-09-154446.jpg" alt="code"></p>
+
+
+                <hr>
+
+                
+
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/2017/01/08/javascript-generator/" data-toggle="tooltip" data-placement="top" title="「译」深入理解 ES6 Generators">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/2017/01/06/webp/" data-toggle="tooltip" data-placement="top" title="开始使用 Webp 图片">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="https://yemengying.com" target="_blank">Giraffe&#39;s Home</a></li>
+                    
+                </ul>
+                
+            </div>
+
+        </div>
+    </div>
+</article>
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "klamtine";
+    var disqus_identifier = "https://shijianan.com/2017/01/07/javascript-decorator/";
+    var disqus_url = "https://shijianan.com/2017/01/07/javascript-decorator/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                    <li>
+                        <a target="_blank" href="https://twitter.com/jiananshi">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+                
+
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank"  href="https://github.com/jiananshi">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; 小森林 2019 
+                    <br>
+                    Theme by <a href="http://huangxuan.me">Hux</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    Ported by <a href="http://blog.kaijun.rocks">Kaijun</a> | 
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=kaijun&repo=hexo-theme-huxblog&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://shijianan.com/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- Side Catalog -->
+
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="https://shijianan.com/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

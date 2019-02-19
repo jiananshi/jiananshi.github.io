@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="小森林，Web">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>
+        
+          如何设计 Mongodb 的数据模型 - jiananshi
+        
+    </title>
+
+    <link rel="canonical" href="https://shijianan.com/2017/08/02/mongodb-normalization/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">小森林</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archives/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $ = document.querySelector;
+    var $toggle = $('.navbar-toggle');
+    var $navbar = $('#huxblog_navbar');
+    var $collapse = $('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    
+<!-- Image to hack wechat -->
+<!-- <img src="https://shijianan.com/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('///pic.yupoo.com/jiananshi/7f720625/9c9c26ad.jpg')
+        
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                          <a class="tag" href="/tags/#mongodb" title="mongodb">mongodb</a>
+                        
+                          <a class="tag" href="/tags/#database" title="database">database</a>
+                        
+                    </div>
+                    <h1>如何设计 Mongodb 的数据模型</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by jiananshi on
+                        2017-08-02
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <p>公司的存储服务上线后，我遇到过很多次使用 MySQL 的表设计模式来设计 Mongodb 存储模型的服务，并在服务拓展后遇到 Mongodb 不支持数据库级别的 join 而觉得它不好用的情况（其他还有如事务、外键等等）。</p>
+<p>在使用了一段时间 Mongodb 后，我觉得这些评价是有失公允的，Mongodb 有它适应的场景，不应该处处同 MySQL 比较。比如不支持 join 我们可以通过应用级别的 join 解决，而且目前注重读性能的服务是禁止使用 join 的（Mongodb 新出的 Aggregation 指令 =&gt; $lookup 可以通过一个逻辑外键来实现 join）。</p>
+<p>Mongodb 的文档是基于 BSON 协议，它可以描述丰富的数据类型，比如数组。在 MySQL 的一对多、一对多中（多对多后面会讲），我们可以通过一个关系表实现：</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>refId</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>20</td>
+</tr>
+<tr>
+<td>1</td>
+<td>30</td>
+</tr>
+<tr>
+<td>5</td>
+<td>60</td>
+</tr>
+</tbody>
+</table>
+<p>而 Mongodb 中则要简单得多：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  id: <span class="number">1</span>,</div><div class="line">  refId: [<span class="number">20</span>, <span class="number">30</span>, <span class="number">60</span>]</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>See？既然我们有如此丰富的数据类型建模，通常可以在设计阶段就将外键的问题消灭，而使用内嵌文档（embeded document）的来设计也可以保证在这一条 document 的读写中的原子性。</p>
+<p>那是否这就意味着使用 Mongodb 就要尽量将存储模型设计成嵌套的存储方式呢？这取决于你的应用场景，假设下面这条数据：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  id: <span class="number">1</span>,</div><div class="line">  name: <span class="string">'mj'</span>,</div><div class="line">  gender: <span class="string">'male'</span>,</div><div class="line">  followers: [</div><div class="line">    &#123; <span class="attr">id</span>: <span class="number">2</span>, <span class="attr">name</span>: <span class="string">'ymy'</span>, <span class="attr">gender</span>: <span class="string">'female'</span> &#125;,</div><div class="line">    &#123; <span class="attr">id</span>: <span class="number">3</span>, <span class="attr">name</span>: <span class="string">'cookie'</span>, <span class="attr">gender</span>: <span class="string">'male'</span> &#125;</div><div class="line">  ]</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>每个人都有关注者（followers），我们将关注者的详细信息存储在了 <code>followers</code> 字段中，这样在获取这个人及他的关注者的信息时，一次 IO 即可完成，添加和删除 followers 也十分便捷。这种模型的弊端也很明显，在 followers 的数据更新时我们需要修改多个地方：这个人的信息，这个人关注的所有人的 followers 的信息。而且这个修改是无法保证原子性的，会出现有的地方的这个人的信息依然是老的，因此这种设计模型常常会被修改成：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  id: <span class="number">1</span>,</div><div class="line">  name: <span class="string">'mj'</span>,</div><div class="line">  followers: [<span class="number">2</span>, <span class="number">3</span>]</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>将 followers 的 id 存储下来，在 follower 信息更新时只更新一个地方，避免了上面提到的写入问题。这是否意味着下面的这种方案更好的？答案是取决于你的应用场景，如果数据大量读极少写（Web 服务通常如此），那么第一个方案对于读的性能会更好，同时也要考虑用户是否可以接受自己修改的信息不同步的问题（可以通过设置一个定时脚本批量同步数据）？而第二个方案在面对频繁写操作的场景更胜一筹。</p>
+<p>还有一个折中的方案是允许部分冗余，比如用户的 gender 其实是几乎不会变的，而在展示 follower 的时候我们同时也希望展示他们的 gender，如果使用方案二不可避免的需要一次应用层的 JOIN 操作，因此我们可以冗余 gender 字段：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  id: <span class="number">1</span>,</div><div class="line">  name: <span class="string">'mj'</span>,</div><div class="line">  followers: [</div><div class="line">    &#123; <span class="attr">id</span>: <span class="number">2</span>, <span class="attr">gender</span>: <span class="string">'female'</span> &#125;,</div><div class="line">    &#123; <span class="attr">id</span>: <span class="number">3</span>, <span class="attr">gender</span>: <span class="string">'male'</span> &#125;</div><div class="line">  ]</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这种模型对读操作同方案一的性能一致，如果在这里调用方仅需要展示 id 和 gender 字段，那么这种数据模型兼具优化读操作，同时将其他写操作频繁数据分离的优势。唯一的问题在于当我们到了需要更新 gender  字段时，我们不得不查询所有的用户，找出包含目标 follower 的数据并更新其中的  gender 字段，在这个例子中由于 follower 「外键」是同一个 collection 中的数据，所以这一操作可以保证原子性，而如果不是同一个 collection 就无法保证操作的原子性了，结果就是出现脏数据。</p>
+<p>所幸这两个问题都有解决办法，查询我们可以通过双向关联来优化，也就是每个 follower 记录一下它 follow 的人的 id，通过这组 id 缩小更新操作的查询范围。而由于没有事务 ，mongodb 中脏数据通常需要我们使用定时脚本去洗或者清理，在实际业务场景中我们总是需要去衡量这两者带来的利弊。</p>
+<p>在以往的数据库设计中进行「范式化」是值得提倡的（关于数据库范式<a href="https://zhihu.com/question/24696366/answer/29189700" target="_blank" rel="external">这里</a>有一篇很好的介绍），套用书里的话来说：</p>
+<blockquote>
+<p>范式化（normalization）是将数据分散到多个不同的集合，不同集合之间可以相互引用数据。虽然很多文档可以引用某一块数据，但是这块数据只存储在一个集合中。所以，如果要修改这块数据，只需修改保存这块数据的那一个文档就行了。但是，MongoDB没有提供连接（join）工具，所以在不同集合之间执行连接查询需要进行多次查询。反范式化（denormalization）与范式化相反：将每个文档所需的数据都嵌入在文档内部。每个文档都拥有自己的数据副本，而不是所以文档共同引用同一个数据副本。这意味着，如果信息发生了变化，那么所有相关文档都需要进行更新，但是在执行查询时，只需要一次查询，就可以得到所有数据</p>
+</blockquote>
+<p>Mongodb 缺乏事务和 JOIN 并不完全是设计的缺陷，而是它有它想要解决的问题和适合的场景，在实际开发中没有一种数据模型可以满足所有业务需求，最终我们还是要根据实际业务场景和读写比例设计我们的数据结构。</p>
+
+
+                <hr>
+
+                
+
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/2017/11/23/flexbox-faq/" data-toggle="tooltip" data-placement="top" title="Flex 的一些常见问题">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/2017/07/15/xss/" data-toggle="tooltip" data-placement="top" title="什么是 XSS 攻击">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#mongodb" title="mongodb">mongodb</a>
+                        
+                          <a class="tag" href="/tags/#database" title="database">database</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="https://yemengying.com" target="_blank">Giraffe&#39;s Home</a></li>
+                    
+                </ul>
+                
+            </div>
+
+        </div>
+    </div>
+</article>
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "klamtine";
+    var disqus_identifier = "https://shijianan.com/2017/08/02/mongodb-normalization/";
+    var disqus_url = "https://shijianan.com/2017/08/02/mongodb-normalization/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                    <li>
+                        <a target="_blank" href="https://twitter.com/jiananshi">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+                
+
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank"  href="https://github.com/jiananshi">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; 小森林 2019 
+                    <br>
+                    Theme by <a href="http://huangxuan.me">Hux</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    Ported by <a href="http://blog.kaijun.rocks">Kaijun</a> | 
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=kaijun&repo=hexo-theme-huxblog&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://shijianan.com/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- Side Catalog -->
+
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="https://shijianan.com/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

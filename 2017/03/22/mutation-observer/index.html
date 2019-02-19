@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="小森林，Web">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>
+        
+          记一次用 MutationObserver debug 的经历 - jiananshi
+        
+    </title>
+
+    <link rel="canonical" href="https://shijianan.com/2017/03/22/mutation-observer/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">小森林</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archives/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $ = document.querySelector;
+    var $toggle = $('.navbar-toggle');
+    var $navbar = $('#huxblog_navbar');
+    var $collapse = $('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    
+<!-- Image to hack wechat -->
+<!-- <img src="https://shijianan.com/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('///pic.yupoo.com/jiananshi/7f720625/9c9c26ad.jpg')
+        
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                          <a class="tag" href="/tags/#javascript" title="javascript">javascript</a>
+                        
+                          <a class="tag" href="/tags/#mutation-observer" title="mutation-observer">mutation-observer</a>
+                        
+                          <a class="tag" href="/tags/#dom" title="dom">dom</a>
+                        
+                    </div>
+                    <h1>记一次用 MutationObserver debug 的经历</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by jiananshi on
+                        2017-03-22
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <blockquote>
+<p>上篇文章在创建 Microtask 中提到了 MutationObserver 的回调函数会创建一个 microtask，很巧的是这周刚好用上了这个 API 并且快速的解决了一个很诡异的问题。</p>
+</blockquote>
+<p>有天下午上班间隙被叫去看一个问题，一个 Node 节点在添加新的 Node 之后它的子节点依然是空的，在检查了拼写、时序等问题后还是没有头绪，这时获取到一个信息：“如果把 DOM 插入操作放到 setTimeout 里执行就可以”，我立刻想到可能是因为插入时 DOM 还没有创建，于是试着在控制台打印，结果是有的… 最后我试着在被插入的 DOM ParentNode 里放了一点内容，刷新之后内容没了，至此我才开始怀疑是有其他脚本在本次 task 中清空了 Node 节点，因此 setTimeout 创建的新的 Task 幸免于难。</p>
+<p>回过头来重新审视这个页面，里面充斥着各种 jq 插件，debug 几乎是一项不可能短时间内完成的任务，接下来的问题就很简单了：如何证明这个 DOM 被修改过？我首先想到为这个 dom 创建一个 proxy，于是我试着将 Node 对象改成一个 Proxy：</p>
+<p><img src="http://oiw32lugp.qnssl.com/2017-03-22-%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202017-03-22%20%E4%B8%8B%E5%8D%8811.31.14.png" alt="screencast"></p>
+<p>如图所示，新创建的 a 标签并没有被 proxy，如果怀疑 a 并不是 Node 的实例的话可以试着运行：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&gt; a <span class="keyword">instanceof</span> Node</div><div class="line"><span class="literal">true</span></div></pre></td></tr></table></figure>
+<p>当然，这里的 Node 是 proxy 之前的 Node，具体为何会这样我也还没想清楚（作为下一篇博客的素材，如果你知道还请在评论里指导我），总之目前来说这个方案破产了。</p>
+<p>这时我突然想起来之前可以为 Node 节点添加观察者的对象：MutationObserver</p>
+<h2 id="MutationObserver"><a href="#MutationObserver" class="headerlink" title="MutationObserver"></a>MutationObserver</h2><p>MutationObserver 是一个全局的构造函数，为了观察目标 DOM，我们首先需要创建一个 observer 实例：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> observer = <span class="keyword">new</span> MutationObserver(<span class="function"><span class="params">mutations</span> =&gt;</span> &#123;</div><div class="line">  mutations.forEach(<span class="built_in">console</span>.log.bind(<span class="built_in">console</span>));</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>MutationObserver 接收一个回调函数，回调函数的参数是一个 <code>MutationRecord&lt;List&gt;</code>，下面列举一下 MutationRecord 对象的结构：</p>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>类型</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>type</td>
+<td>String</td>
+<td>根据 DOM 变动情况返回 attributes/characterData/childList</td>
+</tr>
+<tr>
+<td>target</td>
+<td>Node</td>
+<td>返回此次变化影响到的节点，具体返回那种节点类型是根据 type 值的不同而不同的。如果 type 为 attributes，则返回发生变化的属性节点所在的元素节点,如果 type 值为 characterData，则返回发生变化的这个 characterData 节点。如果 type 为 childList，则返回发生变化的子节点的父节点。</td>
+</tr>
+<tr>
+<td>addedNodes</td>
+<td>NodeList</td>
+<td>返回被添加的节点</td>
+</tr>
+<tr>
+<td>removedNodes</td>
+<td>NodeList</td>
+<td>返回被删除的节点</td>
+</tr>
+<tr>
+<td>previousSibling</td>
+<td>Node</td>
+<td>返回被添加或被删除的节点的前一个兄弟节点</td>
+</tr>
+<tr>
+<td>nextSibling</td>
+<td>Node</td>
+<td>返回被添加或被删除的节点的后一个兄弟节点</td>
+</tr>
+<tr>
+<td>attributeName</td>
+<td>String</td>
+<td>返回变更属性的名称</td>
+</tr>
+<tr>
+<td>attributeNamespace</td>
+<td>String</td>
+<td>返回变更属性的命名空间</td>
+</tr>
+<tr>
+<td>oldValue</td>
+<td>String</td>
+<td>根据 type 值的不同，返回的值也会不同。如果 type 为 attributes，则返回该属性变化之前的属性值。如果 type 为 characterData，则返回该节点变化之前的文本数据。如果 type 为childList。则返回 null</td>
+</tr>
+</tbody>
+</table>
+<p>接下来我们需要为观察者 <code>observer</code> 指定观察的对象以及观察的类型，MutationObserver 支持如下几种类型：</p>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>childList</td>
+<td>需要观察目标节点的子节点</td>
+</tr>
+<tr>
+<td>attributes</td>
+<td>需要观察目标节点的属性节点</td>
+</tr>
+<tr>
+<td>characterData</td>
+<td>节点的文本内容是否发生变化</td>
+</tr>
+<tr>
+<td>subtree</td>
+<td>除了目标节点，如果还需要观察目标节点的所有后代节点（包括上述三种属性变化）</td>
+</tr>
+<tr>
+<td>attributeOldValue</td>
+<td>将发生变化的属性节点之前的属性值记录下来（会记录到 MutationRecord.oldValue），需要注意的是这个属性开启需要将 attributes 属性开启的前提</td>
+</tr>
+<tr>
+<td>characterDataOldValue</td>
+<td>将发生变化的characterData节点之前的文本内容记录下来（同样会被记录到 MutationRecord.oldValue）需要开启 characterData 属性</td>
+</tr>
+<tr>
+<td>attributeFilter</td>
+<td>指定观察的属性名（比如：[‘className’, ‘style’]</td>
+</tr>
+</tbody>
+</table>
+<p>在前面提到的情况中，我们需要观察 DOM 子节点的变化，开启 childList 就够用了：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> $target = <span class="built_in">document</span>.querySelector(<span class="string">'#ymy'</span>);</div><div class="line"><span class="keyword">new</span> MutationObserver(<span class="built_in">console</span>.log.bind(<span class="built_in">console</span>))</div><div class="line">  .observe($target, &#123;</div><div class="line">    childList: <span class="literal">true</span></div><div class="line">  &#125;);</div></pre></td></tr></table></figure>
+<p>之后刷新浏览器观察 Observer 的输出：</p>
+<p><img src="http://oiw32lugp.qnssl.com/2017-03-22-%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202017-03-23%20%E4%B8%8A%E5%8D%8812.22.35.png" alt="screencast"></p>
+<p>可以看到 removedNodes 属性中有一条记录，明确表示这个 DOM 节点的子节点被移除过，后面的事就是开发自己慢慢 debug 了。</p>
+<h2 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h2><p>问题是解决了，但是我产生一个困惑，为什么 observer 的回调参数会是一个数组？看了文档才知道 DOM 的变动不会立刻触发 observer 回调，而是等本次 task 中所有的变动都生效后才运行。举个例子，在一个 task 中对一个 ul 节点插入 10000 个子节点，那么 observer 的回调也仅仅只会运行一次。想到这里，我基本已经确定 observer 的回调函数也是一个 microtask 了。</p>
+<p>为了证实我的猜想，在 Chrome 控制台写了如下代码测试：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> a = <span class="built_in">document</span>.querySelector(<span class="string">'a'</span>);</div><div class="line"><span class="comment">// microtask 1</span></div><div class="line"><span class="built_in">Promise</span>.resolve().then(<span class="function"><span class="params">()</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="number">2</span>));</div><div class="line"><span class="keyword">new</span> MutationObserver(<span class="built_in">console</span>.log.bind(<span class="built_in">console</span>))</div><div class="line">  .observe(a, &#123;</div><div class="line">    childList: <span class="literal">true</span></div><div class="line">  &#125;);</div><div class="line"><span class="comment">// task</span></div><div class="line">setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> a.innerHTML = <span class="string">'ymy'</span>, <span class="number">0</span>)</div><div class="line">a.innerHTML = <span class="string">''</span></div><div class="line"><span class="comment">// microtask 2</span></div><div class="line"><span class="built_in">Promise</span>.resolve().then(<span class="function"><span class="params">()</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="number">3</span>))</div><div class="line">a.innerHTML = <span class="string">'ymy'</span>;</div><div class="line">a.innerHTML = <span class="string">''</span>;</div><div class="line"><span class="built_in">console</span>.log(<span class="number">1</span>);</div></pre></td></tr></table></figure>
+<p>输出如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">&gt; 1</div><div class="line">&gt; 2</div><div class="line">&gt; [MutationRecord, MutationRecord, MutationRecord]</div><div class="line">&gt; 3</div><div class="line">&gt; [MutationRecord]</div></pre></td></tr></table></figure>
+<p>这段代码的执行顺序如下：</p>
+<ol>
+<li>setTimeout 将一次 dom 变动插入下一个 task 队列</li>
+<li>DOM 变动执行完毕</li>
+<li>本次 task 结束前，运行 <code>console.log(1)</code></li>
+<li>开始处理 microtask，首先是 microtask1 <code>console.log(2)</code></li>
+<li>处理 observer 回调，输出本地 DOM 变动影响的 <code>childList</code></li>
+<li>处理 microtask2 <code>console.log(3)</code></li>
+<li>本次 task 结束</li>
+<li>下一个事件队列结束前处理 microtask，observer 回调再次运行</li>
+</ol>
+
+
+                <hr>
+
+                
+
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/2017/03/28/javascript-fetch/" data-toggle="tooltip" data-placement="top" title="「译」That's so fetch!">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/2017/03/18/tasks-microtasks-queue-schedule/" data-toggle="tooltip" data-placement="top" title="「译」Tasks, microtasks, 队列和执行顺序">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#javascript" title="javascript">javascript</a>
+                        
+                          <a class="tag" href="/tags/#mutation-observer" title="mutation-observer">mutation-observer</a>
+                        
+                          <a class="tag" href="/tags/#dom" title="dom">dom</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="https://yemengying.com" target="_blank">Giraffe&#39;s Home</a></li>
+                    
+                </ul>
+                
+            </div>
+
+        </div>
+    </div>
+</article>
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "klamtine";
+    var disqus_identifier = "https://shijianan.com/2017/03/22/mutation-observer/";
+    var disqus_url = "https://shijianan.com/2017/03/22/mutation-observer/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                    <li>
+                        <a target="_blank" href="https://twitter.com/jiananshi">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+                
+
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank"  href="https://github.com/jiananshi">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; 小森林 2019 
+                    <br>
+                    Theme by <a href="http://huangxuan.me">Hux</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    Ported by <a href="http://blog.kaijun.rocks">Kaijun</a> | 
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=kaijun&repo=hexo-theme-huxblog&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://shijianan.com/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- Side Catalog -->
+
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="https://shijianan.com/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>
