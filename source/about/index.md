@@ -5,6 +5,16 @@ date: 2016-04-21 04:48:33
 description: ""
 ---
 
-11 年大学就读于重庆的一个三本院校，因家人期望就读金融专业（因为当年前景好 && 家里在银行有熟人），读了两年以后肄业，多亏在校期间接触的网易公开课（CS50）和 Codecademy 在南京一家创业公司找了份工作就此开始从事互联网行业。
+## About
 
-目前在上海送外卖，有什么有意思的想法或者想来一起工作私戳我：klamtine#gmail.com
+大学肄业生，关注低欲望社会和三和大神，好外出取材，目前居无定所
+
+## Contact
+
+[Twitter](https://twitter.com/katncand1x)
+Email: jianan.shi93#gmail.com
+
+## Programming
+
+[Github](https://github.com/jiananshi)
+[LeetCode](https://leetcode-cn.com/jiananshi/)
