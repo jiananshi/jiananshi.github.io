@@ -46,7 +46,7 @@
     // Use customize navbar with high-quality material design animation
     // in high-perf jank-free CSS3 implementation
     var $body   = document.body;
-    var $ = document.querySelector;
+    var $ = document.querySelector.bind(document);
     var $toggle = $('.navbar-toggle');
     var $navbar = $('#huxblog_navbar');
     var $collapse = $('.navbar-collapse');
