@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword" content="小森林，Web">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>
+        
+          「译」通过 ECMAScript 6 proxies 进行元编程 - jiananshi
+        
+    </title>
+
+    <link rel="canonical" href="https://shijianan.com/2017/02/13/es6-proxies/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">小森林</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archives/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $ = document.querySelector.bind(document);
+    var $toggle = $('.navbar-toggle');
+    var $navbar = $('#huxblog_navbar');
+    var $collapse = $('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    
+<!-- Image to hack wechat -->
+<!-- <img src="https://shijianan.com/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('///pic.yupoo.com/jiananshi/7f720625/9c9c26ad.jpg')
+        
+    }
+</style>
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                          <a class="tag" href="/tags/#javascript es6 proxy" title="javascript es6 proxy">javascript es6 proxy</a>
+                        
+                    </div>
+                    <h1>「译」通过 ECMAScript 6 proxies 进行元编程</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by jiananshi on
+                        2017-02-13
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <blockquote>
+<p>介绍 Proxy 的一篇好文，原文来自 2ality，原文挺长的，拖了很久才成稿。原文地址：<a href="http://www.2ality.com/2014/12/es6-proxies.html" target="_blank" rel="noopener">Meta programming with ECMAScript 6 proxies</a></p>
+</blockquote>
+<p>这篇博客介绍 ES6 的一个特性：Proxies，Proxies 允许开发者拦截并自定义一个对象（比如获取属性），这属于元编程的特性。</p>
+<p>本文的代码会使用到其它一些 ES6 特性，查看 <a href="http://www.2ality.com/2014/08/es6-today.html" target="_blank" rel="noopener">Using ECMAScript 6 today</a> 来全面了解 ES6 都有哪些功能。</p>
+<p>在我们学习 Proxies 以及解释 Proxies 的用处之前，我们首先需要理解 —— 什么是元编程？</p>
+<h2 id="编程和元编程"><a href="#编程和元编程" class="headerlink" title="编程和元编程"></a>编程和元编程</h2><p>编程有以下两种级别（原文为 level，这里翻译为级别，作者是指层级而非孰优孰劣）：</p>
+<ul>
+<li>基础等级（也叫做应用层）：代码主要处理用户的输入</li>
+<li>元编程：处理应用层代码的代码</li>
+</ul>
+<p>应用层代码和元编程可以是两种截然不同的编程语言，下面的代码中，元编程是 Javascript，应用层则是 Java：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> str = <span class="string">'Hello'</span> + <span class="string">'!'</span>.repeat(<span class="number">3</span>);</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'System.out.println("'</span>+str+<span class="string">'")'</span>);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>元编程有很多种形式，上面的代码中我们把 Java 代码打印到了控制台，下面的代码中我会演示如何使用 Javascript 同时编写应用层代码和元编程，一个非常经典的例子就是 <code>eval</code>，<code>eval</code> 可以让你实时编译 Javascript 代码。你真正需要用到 eval 的场景 <a href="http://speakingjs.com/es5/ch23.html#_legitimate_use_cases" target="_blank" rel="noopener">非常少</a>，下面的例子中我们用 eval 来计算 <code>5 + 2</code>：</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">eval</span>(<span class="string">'5 + 2'</span>);</span><br><span class="line"><span class="number">7</span></span><br></pre></td></tr></table></figure>
+<p>Javascript 其他的一些操作咋看起来不像是元编程，但是仔细思考的话你会另有发现：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 应用层</span></span><br><span class="line"><span class="keyword">let</span> obj = &#123;</span><br><span class="line">  hello() &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'Hello!'</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line">    </span><br><span class="line"><span class="comment">// 元编程</span></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> key <span class="keyword">of</span> <span class="built_in">Object</span>.keys(obj)) &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(key);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这段代码在运行的同时也在检查自己的结构（obj），它看起来不像是元编程的主要原因是 Javascript 中编程结构和数据结构的界限非常模糊不清，所有的 <code>Object.*</code> 方法都可以被认为是元编程。</p>
+<h3 id="1-1-元编程的种类"><a href="#1-1-元编程的种类" class="headerlink" title="1.1 元编程的种类"></a>1.1 元编程的种类</h3><p>反射式元编程的意思是程序自己处理自己，Kiczales 在 <a href="http://mitpress.mit.edu/books/art-metaobject-protocol" target="_blank" rel="noopener">这篇文章</a> 中探讨了反射式元编程的三种类型：</p>
+<ul>
+<li>内省性：你对程序结构只有只读权限</li>
+<li>自我修改性：你可以改变结构</li>
+<li>干预性：你可以重新定义操作的语义</li>
+</ul>
+<p>下面我们来看几个例子：</p>
+<p><strong>例子：内省性</strong>：<code>Object.keys()</code> 证明了内省（具体例子在前面的代码中）。</p>
+<p><strong>例子：自我修改性</strong>：下面的代码中，函数 <code>moveProperty</code> 将属性从一个对象移到另一个对象上，它通过使用中括号语法获取属性、赋值操作符和 <code>delete</code> 操作符证明了自我修改性。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">moveProperty</span>(<span class="params">source, propertyName, target</span>) </span>&#123;</span><br><span class="line">  target[propertyName] = source[propertyName];</span><br><span class="line">  <span class="keyword">delete</span> source[propertyName];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用 <code>moveProperty()</code>：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="keyword">let</span> obj1 = &#123; <span class="attr">prop</span>: <span class="string">'abc'</span> &#125;;</span><br><span class="line">&gt; <span class="keyword">let</span> obj2 = &#123;&#125;;</span><br><span class="line">&gt; moveProperty(obj1, <span class="string">'prop'</span>, obj2);</span><br><span class="line">    </span><br><span class="line">&gt; obj1</span><br><span class="line">&#123;&#125;</span><br><span class="line">&gt; obj2</span><br><span class="line">&#123; <span class="attr">prop</span>: <span class="string">'abc'</span> &#125;</span><br></pre></td></tr></table></figure>
+<p>Javascript 目前为止并不具有干预性，Proxies 因此而被创建。</p>
+<h2 id="Proxies-总览"><a href="#Proxies-总览" class="headerlink" title="Proxies 总览"></a>Proxies 总览</h2><p>ES6 Proxies 为 Javascript 提供了干预的功能，你可以对对象 <code>obj</code> 进行很多操作，举个例子：</p>
+<ul>
+<li>获取属性 <code>prop</code>（通过 <code>obj.prop</code>）</li>
+<li>列举出所有可枚举的属性（通过 <code>Object.keys(obj)</code>）</li>
+</ul>
+<p>Proxies 是一种独特的对象，通过它你可以为一些操作自定义实现，一个proxy 实例的创建需要两个参数：</p>
+<ul>
+<li>handler: 每一个操作都有一个对应的 handler 方法，这种干预其他操作的方法被称为 trap（这个词是从操作系统领域借鉴来的）。</li>
+<li>target: 如果 handler 方法没有干预操作，那么它就是直接在 target 上应用，换句话说 proxy 在 target 外包了一层。</li>
+</ul>
+<p>下面的代码中 handler 干预了操作 get。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> target = &#123;&#125;;</span><br><span class="line"><span class="keyword">let</span> handler = &#123;</span><br><span class="line">  get(target, propKey, receiver) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'get '</span> + propKey);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">123</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">let</span> proxy = <span class="keyword">new</span> <span class="built_in">Proxy</span>(target, handler);</span><br></pre></td></tr></table></figure>
+<p>当我们尝试获取属性 <code>foo</code> 时，proxy 劫持了这个操作：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt; proxy.foo</span><br><span class="line">get foo</span><br><span class="line"><span class="number">123</span></span><br></pre></td></tr></table></figure>
+<p>handler 并没有实现 set 方法，所以如果我们尝试去设置 <code>proxy.bar</code>，那么最终 target.bar 会被设置。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt; proxy.bar = <span class="string">'abc'</span>;</span><br><span class="line">&gt; target.bar</span><br><span class="line"><span class="string">'abc'</span></span><br></pre></td></tr></table></figure>
+<h3 id="2-1-应用在函数上的-trap"><a href="#2-1-应用在函数上的-trap" class="headerlink" title="2.1 应用在函数上的 trap"></a>2.1 应用在函数上的 trap</h3><p>如果 target 是一个函数，那么我们可以额外增加两个劫持对象：</p>
+<ul>
+<li>apply: 进行一次函数调用，通过 <code>proxy(…)</code>，<code>proxy.call(…)</code>，<code>proxy.apply(…)</code> 触发</li>
+<li>construct: 进行一次构造函数调用，通过 <code>new proxy(…)</code> 触发</li>
+</ul>
+<p>只在函数上提供这两个 trap 的原因很简单：在其他对象上你也用不到这两个操作。</p>
+<h3 id="2-2-可执行的-proxies"><a href="#2-2-可执行的-proxies" class="headerlink" title="2.2 可执行的 proxies"></a>2.2 可执行的 proxies</h3><p>ES6 允许你创建可执行的 proxy：</p>
+<p><code>let {proxy, revoke} = Proxy.revocable(target, handler);</code></p>
+<p>在代码的左值我们使用了 <a href="http://www.2ality.com/2014/06/es6-multiple-return-values.html" target="_blank" rel="noopener">解构</a> 来获取 <code>Proxy.revocable()</code> 返回的属性：proxy 和 revoke。</p>
+<p>在你第一次调用 revoke 过后，对 proxy 进行的任何操作都会返回一个 TypeError，后续继续调用 revoke 也不会有任何边际影响。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> target = &#123;&#125;; <span class="comment">// 创建一个空对象</span></span><br><span class="line"><span class="keyword">let</span> handler = &#123;&#125;; <span class="comment">// 不劫持任何属性</span></span><br><span class="line"><span class="keyword">let</span> &#123;proxy, revoke&#125; = <span class="built_in">Proxy</span>.revocable(target, handler);</span><br><span class="line">    </span><br><span class="line">proxy.foo = <span class="number">123</span>;</span><br><span class="line"><span class="built_in">console</span>.log(proxy.foo); <span class="comment">// 123</span></span><br><span class="line">    </span><br><span class="line">revoke();</span><br><span class="line">    </span><br><span class="line"><span class="built_in">console</span>.log(proxy.foo); <span class="comment">// TypeError: Revoked</span></span><br></pre></td></tr></table></figure>
+<h3 id="2-3-Proxies-用作原型"><a href="#2-3-Proxies-用作原型" class="headerlink" title="2.3 Proxies 用作原型"></a>2.3 Proxies 用作原型</h3><p>proxy 的 proto 对象可以作为对象 obj 的原型，某些在 <code>obj</code> 上执行的操作可能会一直沿着原型链想上查找到 <code>proto</code>，比如 get。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> proto = <span class="keyword">new</span> <span class="built_in">Proxy</span>(&#123;&#125;, &#123;</span><br><span class="line">  get(target, propertyKey, receiver) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'GET '</span>+propertyKey);</span><br><span class="line">    <span class="keyword">return</span> target[propertyKey];</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br><span class="line">    </span><br><span class="line"><span class="keyword">let</span> obj = <span class="built_in">Object</span>.create(proto);</span><br><span class="line">obj.bla; <span class="comment">// Output: GET bla</span></span><br></pre></td></tr></table></figure>
+<p>属性 <code>bla</code> 并没有在 <code>obj</code> 对象上，因此原型链一直查找到了 <code>proto</code> 并触发了 get 方法。除此之外还有很多其他会影响到原型的方法，我把它们在这篇博客的最后都列举出来了。</p>
+<h3 id="2-4-操作转发"><a href="#2-4-操作转发" class="headerlink" title="2.4 操作转发"></a>2.4 操作转发</h3><p>有的时候你可能想在转发操作的时候额外做一些事情，举个例子，一个 handler 劫持并打印出所有的操作，却不影响它们应用在目标对象上。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> handler = &#123;</span><br><span class="line">  deleteProperty(target, propKey) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'DELETE '</span> + propKey);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">delete</span> target[propKey];</span><br><span class="line">  &#125;,</span><br><span class="line">  has(target, propKey) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'HAS '</span> + propKey);</span><br><span class="line">    <span class="keyword">return</span> propKey <span class="keyword">in</span> target;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于每个 trap，我们首先输出操作名然后手动转发它，ES6 有一个特性可以帮助我们完成转发叫做 <code>Reflect</code>。瞎 main我们使用 Reflect 重写上面的代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> handler = &#123;</span><br><span class="line">  deleteProperty(target, propKey) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'DELETE '</span> + propKey);</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">Reflect</span>.deleteProperty(target, propKey);</span><br><span class="line">  &#125;,</span><br><span class="line">  has(target, propKey) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'HAS '</span> + propKey);</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">Reflect</span>.has(target, propKey);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>接着我们用 proxy 来实现这个 handler：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> handler = <span class="keyword">new</span> <span class="built_in">Proxy</span>(&#123;&#125;, &#123;</span><br><span class="line">  get(target, trapName, receiver) &#123;</span><br><span class="line">    <span class="comment">// 返回 trapName 作为 handler 函数的名字</span></span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params">...args</span>) </span>&#123;</span><br><span class="line">      <span class="comment">// 取出 args[0]</span></span><br><span class="line">      <span class="built_in">console</span>.log(trapName.toUpperCase()+<span class="string">' '</span>+args.slice(<span class="number">1</span>));</span><br><span class="line">      <span class="comment">// 转发操作</span></span><br><span class="line">      <span class="keyword">return</span> <span class="built_in">Reflect</span>[trapName](...args);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>对于每个 trap，proxy 通过 get 操作获取 trapName 对应的函数，现在，所有的函数都可以通过一个 get 操作来实现，这也是 proxy API 设计的目标之一。</p>
+<p>下面让我们来使用这个基于 proxy 的函数：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="keyword">let</span> target = &#123;&#125;;</span><br><span class="line">&gt; <span class="keyword">let</span> proxy = <span class="keyword">new</span> <span class="built_in">Proxy</span>(target, handler);</span><br><span class="line">&gt; proxy.foo = <span class="number">123</span>;</span><br><span class="line">SET foo,<span class="number">123</span>,[object <span class="built_in">Object</span>]</span><br><span class="line">&gt; proxy.foo</span><br><span class="line">GET foo,[object <span class="built_in">Object</span>]</span><br><span class="line"><span class="number">123</span></span><br></pre></td></tr></table></figure>
+<p>下面的代码证实了 set 方法确实将属性写到 target 上了：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; target.foo</span><br><span class="line"><span class="number">123</span></span><br></pre></td></tr></table></figure>
+<h2 id="3-Proxy-的使用场景"><a href="#3-Proxy-的使用场景" class="headerlink" title="3. Proxy 的使用场景"></a>3. Proxy 的使用场景</h2><h3 id="3-1-用纯-JS-实现-DOM"><a href="#3-1-用纯-JS-实现-DOM" class="headerlink" title="3.1 用纯 JS 实现 DOM"></a>3.1 用纯 JS 实现 DOM</h3><p>浏览器 Document Object Model（DOM）通常是混合使用 C++ 和 JS 实现的，单纯通过 JS 实现的好处在于：</p>
+<ul>
+<li>模拟一个浏览器环境，<a href="https://github.com/tmpvar/jsdom" target="_blank" rel="noopener">jsdom</a> 就是一个在 nodejs 中操作 HTML 的库。</li>
+<li>提高 DOM 性能（在 JS 和 C++ 中切换是有时间成本的）</li>
+</ul>
+<p>不过标准的 DOM 有些特性很难用 JS 实现，举个例子，大部分 DOM 都可以在改变时实时更新在视图上，而 JS 实现的话效率就并没有那么高。为 JS 提供 proxy 的一大原因就是希望可以更高效的实现 DOM。</p>
+<h3 id="3-2-访问-RESTful-Web-服务"><a href="#3-2-访问-RESTful-Web-服务" class="headerlink" title="3.2 访问 RESTful Web 服务"></a>3.2 访问 RESTful Web 服务</h3><p>proxy 可以创建一个可以执行任何方法的对象，下面的例子中 <code>createWebService</code> 就创建了一个这样的对象 <code>service</code>，在 <code>service</code> 上执行一个方法会返回方法同名的资源。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> service = createWebService(<span class="string">'http://example.com/data'</span>);</span><br><span class="line"><span class="comment">// Read JSON data in http://example.com/data/employees</span></span><br><span class="line">service.employees().then(<span class="function"><span class="params">json</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">let</span> employees = <span class="built_in">JSON</span>.parse(json);</span><br><span class="line">  ···</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>下面的代码是 ES5 实现的 <code>createService</code>，因为不能使用 proxy 所以我们必须预先知道 service 上都有哪些方法需要执行，参数 <code>propKeys</code> 是一个方法名数组，它负责配置 service 上将要执行的函数。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createWebService</span>(<span class="params">baseUrl, propKeys</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> service = &#123;&#125;;</span><br><span class="line">  propKeys.forEach(<span class="function"><span class="keyword">function</span> (<span class="params">propKey</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">Object</span>.defineProperty(service, propKey, &#123;</span><br><span class="line">      get: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> httpGet(baseUrl+<span class="string">'/'</span>+propKey);</span><br><span class="line">      &#125;</span><br><span class="line">    );</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="keyword">return</span> service;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="3-3-跟踪属性访问"><a href="#3-3-跟踪属性访问" class="headerlink" title="3.3 跟踪属性访问"></a>3.3 跟踪属性访问</h3><p>Proxy 可以让我们跟踪指定的属性的读取与修改，为了说明它是如何工作的，我们创建了一个 Point 类并跟踪它的实例的属性。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Point</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>(x, y) &#123;</span><br><span class="line">    <span class="keyword">this</span>.x = x;</span><br><span class="line">    <span class="keyword">this</span>.y = y;</span><br><span class="line">  &#125;</span><br><span class="line">  toString() &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">'Point('</span>+<span class="keyword">this</span>.x+<span class="string">','</span>+<span class="keyword">this</span>.y+<span class="string">')'</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 跟踪属性 `x` 和 `y`</span></span><br><span class="line"><span class="keyword">let</span> p = <span class="keyword">new</span> Point(<span class="number">5</span>, <span class="number">7</span>);</span><br><span class="line">p = tracePropAccess(p, [<span class="string">'x'</span>, <span class="string">'y'</span>]);</span><br></pre></td></tr></table></figure>
+<p>现在，获取和修改 p 的属性会出现下面的输出：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&gt; p.x</span><br><span class="line">GET x</span><br><span class="line"><span class="number">5</span></span><br><span class="line">&gt; p.x = <span class="number">21</span></span><br><span class="line">SET x=<span class="number">21</span></span><br><span class="line"><span class="number">21</span></span><br></pre></td></tr></table></figure>
+<p>有趣的是及时父类 Point 访问 p 的属性也会被跟踪，这是因为 this 现在指向的是一个 proxy 了：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt; p.toString()</span><br><span class="line">GET x</span><br><span class="line">GET y</span><br><span class="line"><span class="string">'Point(21,7)'</span></span><br></pre></td></tr></table></figure>
+<p>在 ES5 中如果我们要实现 <code>tracePropAccess</code> 就要用 <code>getter</code> 和 <code>setter</code> 替代每一个属性，它们还需要一个额外的对象 <code>propData</code> 用来存属性的数据，需要注意的是我们在完全修改原有的实现，也就是说我们在元编程。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">tracePropAccess</span>(<span class="params">obj, propKeys</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 保存属性数据</span></span><br><span class="line">  <span class="keyword">let</span> propData = <span class="built_in">Object</span>.create(<span class="literal">null</span>);</span><br><span class="line">  <span class="comment">// 使用 getter 和 setter 替代每一个属性</span></span><br><span class="line">  propKeys.forEach(<span class="function"><span class="keyword">function</span> (<span class="params">propKey</span>) </span>&#123;</span><br><span class="line">    propData[propKey] = obj[propKey];</span><br><span class="line">    <span class="built_in">Object</span>.defineProperty(obj, propKey, &#123;</span><br><span class="line">      get: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'GET '</span>+propKey);</span><br><span class="line">        <span class="keyword">return</span> propData[propKey];</span><br><span class="line">      &#125;,</span><br><span class="line">      set: <span class="function"><span class="keyword">function</span> (<span class="params">value</span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'SET '</span>+propKey+<span class="string">'='</span>+value);</span><br><span class="line">        propData[propKey] = value;</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="keyword">return</span> obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在 ES6 中我们可以用一种更简单的、基于 proxy 的实现，我们拦截属性的 get/set 并且不对原有代码做任何修改。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">tracePropAccess</span>(<span class="params">obj, propKeys</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> propKeySet = <span class="keyword">new</span> <span class="built_in">Set</span>(...propKeys);</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Proxy</span>(obj, &#123;</span><br><span class="line">    get(target, propKey, receiver) &#123;</span><br><span class="line">      <span class="keyword">if</span> (propKeySet.has(propKey)) &#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'GET '</span>+propKey);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="built_in">Reflect</span>.get(target, propKey, receiver);</span><br><span class="line">    &#125;,</span><br><span class="line">    set(target, propKey, value, receiver) &#123;</span><br><span class="line">      <span class="keyword">if</span> (propKeySet.has(propKey)) &#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'SET '</span>+propKey+<span class="string">'='</span>+value);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="built_in">Reflect</span>.set(target, propKey, value, receiver);</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="3-4-访问不存在的属性时发出提醒"><a href="#3-4-访问不存在的属性时发出提醒" class="headerlink" title="3.4 访问不存在的属性时发出提醒"></a>3.4 访问不存在的属性时发出提醒</h3><p>Javascript 对于属性获取非常宽容，举个例子，当你访问一个属性并有意无意拼错了它的名字，Javascript 并不会报错而只是返回一个 <code>undefined</code>。在这种场景下你可以用 proxy 以抛出错误，本质上是把 proxy 设置为 Object 的原型。</p>
+<p>属性不存在于对象上时，proxy 的 get 就会被触发，如果这个属性也不再原型链中，那么此时我们抛出一个异常。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> PropertyChecker = <span class="keyword">new</span> <span class="built_in">Proxy</span>(&#123;&#125;, &#123;</span><br><span class="line">  get(target, propKey, receiver) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!(propKey <span class="keyword">in</span> target)) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">ReferenceError</span>(<span class="string">'Unknown property: '</span>+propKey);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">Reflect</span>.get(target, propKey, receiver);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>下面我们为我们创建的对象使用 <code>PropertyChecker</code> ：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="keyword">let</span> obj = &#123; <span class="attr">__proto__</span>: PropertyChecker, <span class="attr">foo</span>: <span class="number">123</span> &#125;;</span><br><span class="line">&gt; obj.foo  <span class="comment">// own</span></span><br><span class="line"><span class="number">123</span></span><br><span class="line">&gt; obj.fo</span><br><span class="line"><span class="built_in">ReferenceError</span>: Unknown property: fo</span><br><span class="line">&gt; obj.toString()  <span class="comment">// inherited</span></span><br><span class="line"><span class="string">'[object Object]'</span></span><br></pre></td></tr></table></figure>
+<p>如果我们把 PropertyChecker 转化为一个构造函数，那么我们甚至可以用 ES6 classes 的 extends 来使用它：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">PropertyChecker</span>(<span class="params"></span>) </span>&#123; &#125;</span><br><span class="line">PropertyChecker.prototype = <span class="keyword">new</span> <span class="built_in">Proxy</span>(···);</span><br><span class="line">    </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Point</span> <span class="keyword">extends</span> <span class="title">PropertyChecker</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>(x, y) &#123;</span><br><span class="line">    <span class="keyword">this</span>.x = x;</span><br><span class="line">    <span class="keyword">this</span>.y = y;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">    </span><br><span class="line"><span class="keyword">let</span> p = <span class="keyword">new</span> Point(<span class="number">5</span>, <span class="number">7</span>);</span><br><span class="line"><span class="built_in">console</span>.log(p.x); <span class="comment">// 5</span></span><br><span class="line"><span class="built_in">console</span>.log(p.z); <span class="comment">// ReferenceError</span></span><br></pre></td></tr></table></figure>
+<p>如果你担心意外创建新的属性，有两个方法可以解决：你可以创建一个 proxy 劫持 set 方法，或者通过 <code>Object.preventExtensions(obj)</code> 方法阻止对象的拓展，意思就是 JS 不允许你继续往 obj 上新增属性。</p>
+<h3 id="3-5-使用负值获取-Array-元素"><a href="#3-5-使用负值获取-Array-元素" class="headerlink" title="3.5 使用负值获取 Array 元素"></a>3.5 使用负值获取 Array 元素</h3><p>有些数组方法允许你通过 <code>-1</code> 获取数组最后一个元素，倒数第二个通过 <code>-2</code> 以此类推。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; [<span class="string">'a'</span>, <span class="string">'b'</span>, <span class="string">'c'</span>].slice(<span class="number">-1</span>)</span><br><span class="line">[<span class="string">'c'</span>]</span><br></pre></td></tr></table></figure>
+<p>遗憾的是，通过中括号操作符（<code>[]</code>）不能这么获取，不过我们可以用 proxy 劫持 get 操作来支持这一特性，下面的 <code>createArray</code> 函数创建了一个支付负数索引的数组：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createArray</span>(<span class="params">...elements</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> handler = &#123;</span><br><span class="line">    get(target, propKey, receiver) &#123;</span><br><span class="line">      <span class="keyword">let</span> index = <span class="built_in">Number</span>(propKey);</span><br><span class="line">      <span class="keyword">if</span> (index &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        propKey = <span class="built_in">String</span>(target.length + index);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="built_in">Reflect</span>.get(target, propKey, receiver);</span><br><span class="line">     &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="comment">// 把数组用 proxy 包裹一层</span></span><br><span class="line">  <span class="keyword">let</span> target = [];</span><br><span class="line">  target.push(...elements);</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Proxy</span>(target, handler);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">let</span> arr = createArray(<span class="string">'a'</span>, <span class="string">'b'</span>, <span class="string">'c'</span>);</span><br><span class="line"><span class="built_in">console</span>.log(arr[<span class="number">-1</span>]); <span class="comment">// c</span></span><br></pre></td></tr></table></figure>
+<h3 id="3-6-数据绑定"><a href="#3-6-数据绑定" class="headerlink" title="3.6 数据绑定"></a>3.6 数据绑定</h3><p>数据绑定的意义主要在于同步对象之间的数据，一个很流行的场景就是视图同模型绑定，当数据改变时视图也会立刻更新。</p>
+<p>为了实现数据绑定，我们必须观察对象的变化并对其作出反应，下面的代码中实现了如何观察一个数组：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> array = [];</span><br><span class="line"><span class="keyword">let</span> observedArray = <span class="keyword">new</span> <span class="built_in">Proxy</span>(array, &#123;</span><br><span class="line">  set(target, propertyKey, value, receiver) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(propertyKey+<span class="string">'='</span>+value);</span><br><span class="line">    target[propertyKey] = value;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br><span class="line">observedArray.push(<span class="string">'a'</span>);</span><br></pre></td></tr></table></figure>
+<p>Output：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">0=a</span><br><span class="line">length=1</span><br></pre></td></tr></table></figure>
+<p>查看 Addy Osmani’s（译者注：这位老哥很厉害，BackBone 时就走在前面了，最近在搞 PWA）的 <a href="http://www.html5rocks.com/en/tutorials/es7/observe/" target="_blank" rel="noopener">Data-binding Revolutions with Object.observe()</a> 来进一步了解 <code>Object.observe()</code>。</p>
+<h3 id="3-7-销毁引用"><a href="#3-7-销毁引用" class="headerlink" title="3.7 销毁引用"></a>3.7 销毁引用</h3><p>销毁引用的原理是这样的：客户端必须通过某个对象（中间件）来访问一个资源，当客户端只用完毕后销毁这个对象，之后对这个对象执行的操作会直接报错。</p>
+<p>下面的代码中我们为 resource 创建了一个可销毁的引用，接下来我们试着通过这个引用访问 resource 上的属性是可以的，然后销毁这个引用。当我们再次尝试通过引用访问 resource 时就不行了。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> resource = &#123; <span class="attr">x</span>: <span class="number">11</span>, <span class="attr">y</span>: <span class="number">8</span> &#125;;</span><br><span class="line"><span class="keyword">let</span> &#123;reference, revoke&#125; = createRevocableReference(resource);</span><br><span class="line">    </span><br><span class="line"><span class="comment">// 允许访问</span></span><br><span class="line"><span class="built_in">console</span>.log(reference.x); <span class="comment">// 11</span></span><br><span class="line">    </span><br><span class="line">revoke();</span><br><span class="line">    </span><br><span class="line"><span class="comment">// 禁止访问</span></span><br><span class="line"><span class="built_in">console</span>.log(reference.x); <span class="comment">// TypeError: Revoked</span></span><br></pre></td></tr></table></figure>
+<p>Proxy 非常适合用来做这种劫持并转发的操作，下面我们简单实现了一个 proxy 版本的 <code>createRevocableReference</code>：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createRevocableReference</span>(<span class="params">target</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> enabled = <span class="literal">true</span>;</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    reference: <span class="keyword">new</span> <span class="built_in">Proxy</span>(target, &#123;</span><br><span class="line">      get(target, propKey, receiver) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!enabled) &#123;</span><br><span class="line">          <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">TypeError</span>(<span class="string">'Revoked'</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">Reflect</span>.get(target, propKey, receiver);</span><br><span class="line">      &#125;,</span><br><span class="line">      has(target, propKey) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!enabled) &#123;</span><br><span class="line">          <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">TypeError</span>(<span class="string">'Revoked'</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">Reflect</span>.has(target, propKey);</span><br><span class="line">      &#125;,</span><br><span class="line">      ···</span><br><span class="line">    &#125;),</span><br><span class="line">    revoke() &#123;</span><br><span class="line">      enabled = <span class="literal">false</span>;</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们可以通过之前介绍的 proxy-as-handler 的模式来进一步简化代码，handler 其实就是 Relect 对象，<code>get</code> 方法会返回 Reflect 上对应的方法，如果引用被销毁了，那么就抛出一个 TypeError 错误。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createRevocableReference</span>(<span class="params">target</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> enabled = <span class="literal">true</span>;</span><br><span class="line">  <span class="keyword">let</span> handler = <span class="keyword">new</span> <span class="built_in">Proxy</span>(&#123;&#125;, &#123;</span><br><span class="line">    get(dummyTarget, trapName, receiver) &#123;</span><br><span class="line">      <span class="keyword">if</span> (!enabled) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">TypeError</span>(<span class="string">'Revoked'</span>);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="built_in">Reflect</span>[trapName];</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    reference: <span class="keyword">new</span> <span class="built_in">Proxy</span>(target, handler),</span><br><span class="line">    revoke() &#123;</span><br><span class="line">      enabled = <span class="literal">false</span>;</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>不过现在你不需要自己手动销毁引用，ES6 种允许你创建可以销毁的 proxy。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createRevocableReference</span>(<span class="params">target</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> handler = &#123;&#125;; <span class="comment">// forward everything</span></span><br><span class="line">  <span class="keyword">let</span> &#123; proxy, revoke &#125; = <span class="built_in">Proxy</span>.revocable(target, handler);</span><br><span class="line">  <span class="keyword">return</span> &#123; <span class="attr">reference</span>: proxy, revoke &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>Membranes</strong><br>Membranes 是一种基于销毁引用的概念：执行环境中会运行不安全的代码，代码的沙河环境通过 Membranes 包一层以同系统环境隔离，对象通过两个方向传递 Membrane：</p>
+<ul>
+<li>代码可能会接收外部的代码</li>
+<li>代码可能会给外部返回对象</li>
+</ul>
+<p>这两种情况都需要销毁引用，返回的对象或方法也需要销毁引用。</p>
+<p>不安全的代码执行完毕后，引用都应当被销毁以防止外部继续访问，<a href="https://developers.google.com/caja/" target="_blank" rel="noopener">Caja Compiler</a> 就是一个将第三方 HTML，CSS，JS 安全的插入你的网站的工具，他就是通过 Membrane 实现的。</p>
+<h3 id="3-8-其他场景"><a href="#3-8-其他场景" class="headerlink" title="3.8 其他场景"></a>3.8 其他场景</h3><p>在举几个 proxy 的使用场景：</p>
+<ul>
+<li>将操作映射到远程对象的本地占位符，比如 web service</li>
+<li>读写数据库</li>
+<li>性能监测：拦截方法的执行并记录每个方法的执行时间</li>
+<li>类型检查：Nicholas Zakas（译者注：就是高级编程的作者啦，不过现在不如本文的作者高产了）用 proxy 实现了 <a href="https://www.nczonline.net/blog/2014/04/29/creating-type-safe-properties-with-ecmascript-6-proxies/" target="_blank" rel="noopener">类型检查</a></li>
+</ul>
+<h2 id="Proxy-API-设计"><a href="#Proxy-API-设计" class="headerlink" title="Proxy API 设计"></a>Proxy API 设计</h2><h3 id="4-1-分层：分离应用层代码和元编程"><a href="#4-1-分层：分离应用层代码和元编程" class="headerlink" title="4.1 分层：分离应用层代码和元编程"></a>4.1 分层：分离应用层代码和元编程</h3><p>Firefox 有一个元编程的功能：当你定义一个函数名为 <code>__noSuchMethod__</code> 的方法，当你调用不存在的方法的时候就会被调用，下面是一个例子：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> obj = &#123;</span><br><span class="line">  __noSuchMethod__: <span class="function"><span class="keyword">function</span> (<span class="params">name, args</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(name+<span class="string">': '</span>+args);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">// 下面调用的两个方法都不存在,</span></span><br><span class="line"><span class="comment">// 但是我们可以让它表现的好像存在似的</span></span><br><span class="line">obj.foo(<span class="number">1</span>);    <span class="comment">// Output: foo: 1</span></span><br><span class="line">obj.bar(<span class="number">1</span>, <span class="number">2</span>); <span class="comment">// Output: bar: 1,2</span></span><br></pre></td></tr></table></figure>
+<p>这样 <code>__noSuchMethod__</code> 就像是 proxy 一样，同 proxy 不同的是，这个方法是对象自身或继承的，它存在的一个问题就是混淆了应用层代码和元编程，应用层的代码可能会无意中创建元编程（译者注：作者应该是指开发者为对象创建一个 <code>__noSuchMethod</code> 的应用层方法）</p>
+<p>即使在 ES5 中应用层代码和元编程也会时不时的混淆，举个例子，下面几个元编程会出错，因为它们都属于应用层：</p>
+<ul>
+<li><code>obj.hasOwnProperty(propKey)</code>：当原型链上有方法覆盖了内置方法的时候，这个方法可能就报错了，比如 <code>obj</code> 是 <code>{ hasOwnProperty: null }</code>，推荐的方式是：<code>Object.prototype.hasOwnProperty.call(obj, propKey)</code> 或者缩减版：<code>{}.hasOwnProperty.call(obj, propKey)</code>。</li>
+<li><code>func.call(···)</code>, <code>func.apply(···)</code>：解决方案同上面的方法一样。</li>
+<li><code>obj.__proto__</code>：在大多数 JS 引擎中，<strong>proto</strong> 都是一个特殊的属性供开发者读写 <code>obj</code> 的原型，因此当你把对象用作字典的时候，千万避开把 <strong>proto</strong> 设置为一个 key。</li>
+</ul>
+<p>现在，你应该知道了为什么不应该混淆应用层和元编程，proxy 是有分层的，应用层（proxy 对象）和元编程（handler 对象）是隔离开的。</p>
+<h3 id="4-2-Virtual-objects-vs-wrappers"><a href="#4-2-Virtual-objects-vs-wrappers" class="headerlink" title="4.2 Virtual objects vs wrappers"></a>4.2 Virtual objects vs wrappers</h3><p>Proxy 主要扮演两个角色：</p>
+<ul>
+<li>作为 wrapper：proxy 包裹了一层目标对象，控制对它们的访问。比如：可销毁的资源和性能分析。</li>
+<li>作为 virtual objects：它们只是有特殊方法的对象，比如 proxy 将方法调用转发到一个远程的对象上。</li>
+</ul>
+<h3 id="4-3-虚拟化透明和-handler-封装"><a href="#4-3-虚拟化透明和-handler-封装" class="headerlink" title="4.3 虚拟化透明和 handler 封装"></a>4.3 虚拟化透明和 handler 封装</h3><p>Proxy 通过以下两种方式进行屏蔽：</p>
+<ul>
+<li>使用者无法判断一个对象是不是 proxy</li>
+<li>使用者无法通过 proxy 获取原对象<br>这两点赋予了 proxy 冒充另一个对象的能力，如果你需要判断一个对象是不是 proxy 只能自己去实现，下面的 lib.js 代码中暴露了两个函数：其中一个创建了一个 proxy，另一个检查输入的对象是不是 lib.js 创建的 proxy。</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// lib.js</span></span><br><span class="line">    </span><br><span class="line"><span class="keyword">let</span> proxies = <span class="keyword">new</span> <span class="built_in">WeakSet</span>();</span><br><span class="line">    </span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">createProxy</span>(<span class="params">obj</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> handler = &#123;&#125;;</span><br><span class="line">  <span class="keyword">let</span> proxy = <span class="keyword">new</span> <span class="built_in">Proxy</span>(obj, handler);</span><br><span class="line">  proxies.add(proxy);</span><br><span class="line">  <span class="keyword">return</span> proxy;</span><br><span class="line">&#125;</span><br><span class="line">    </span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">isProxy</span>(<span class="params">obj</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> proxies.has(obj);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个模块用了 ES6 的特性 <code>WeakSet</code> 来保存 proxy，<code>WeakSet</code> 因为不会阻止成员被 GC 所以非常适合这个场景，下面的例子是 lib.js 的使用：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// main.js</span></span><br><span class="line">    </span><br><span class="line"><span class="keyword">import</span> &#123; createProxy, isProxy &#125; <span class="keyword">from</span> <span class="string">'./lib.js'</span>;</span><br><span class="line">    </span><br><span class="line"><span class="keyword">let</span> p = createProxy(&#123;&#125;);</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(isProxy(p)); <span class="comment">// true</span></span><br><span class="line"><span class="built_in">console</span>.log(isProxy(&#123;&#125;)); <span class="comment">// false</span></span><br></pre></td></tr></table></figure>
+<h3 id="4-4-元对象的协议和-Proxy-traps"><a href="#4-4-元对象的协议和-Proxy-traps" class="headerlink" title="4.4  元对象的协议和 Proxy traps"></a>4.4  元对象的协议和 Proxy traps</h3><p>术语「协议」在计算机科学中有很多种含义，其中之一是：</p>
+<blockquote>
+<p>协议是通过一个对象完成一系列任务，它包括一组方法和使用这些方法的规则</p>
+</blockquote>
+<p>需要注意的是这个定义同把协议当作借口的定义是不同的（比如：Objective-C），因为这里的协议包含了规则。</p>
+<p>ECMAScript 标准定义了如何执行 JS 代码，它里面包含 <a href="https://tc39.github.io/ecma262/#sec-ordinary-and-exotic-objects-behaviours" target="_blank" rel="noopener">如何处理对象的协议</a> ，这个协议主要用在元编程级别，有时也叫 meta object protocol（MOP）。JS MOP 包含了一条：所有的对象都有内置方法，「内置」的含义是这些方法仅仅存在于规范中，JS 引擎有可能有有可能没有，并且 在 JS 中不能直接访问到，内置方法的名字会被放在两个中括号中间。</p>
+<p>内置的获取属性方法叫做 <code>[[GET]]</code>，假设我们可以用两个中括弧这种语法，那么这个方法在 JS 中的实现大概像下面的代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 方法定义</span></span><br><span class="line">[[Get]](propKey, receiver) &#123;</span><br><span class="line">  <span class="keyword">let</span> desc = <span class="keyword">this</span>.[[GetOwnProperty]](propKey);</span><br><span class="line">  <span class="keyword">if</span> (desc === <span class="literal">undefined</span>) &#123;</span><br><span class="line">    <span class="keyword">let</span> parent = <span class="keyword">this</span>.[[GetPrototypeOf]]();</span><br><span class="line">    <span class="keyword">if</span> (parent === <span class="literal">null</span>) <span class="keyword">return</span> <span class="literal">undefined</span>;</span><br><span class="line">    <span class="keyword">return</span> parent.[[Get]](propKey, receiver); <span class="comment">// (*)</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (<span class="string">'value'</span> <span class="keyword">in</span> desc) &#123;</span><br><span class="line">    <span class="keyword">return</span> desc.value;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">let</span> getter = desc.get;</span><br><span class="line">  <span class="keyword">if</span> (getter === <span class="literal">undefined</span>) <span class="keyword">return</span> <span class="literal">undefined</span>;</span><br><span class="line">  <span class="keyword">return</span> getter.[[Call]](receiver, []);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这段代码中用到的 MOP 方法有以下几个：</p>
+<ul>
+<li>[[GetOwnProperty]] (trap getOwnPropertyDescriptor)</li>
+<li>[[GetPrototypeOf]] (trap getPrototypeOf)</li>
+<li>[[Get]] (trap get)</li>
+<li>[[Call]] (trap apply)</li>
+</ul>
+<p>可以看到 <code>[[Get]]</code> 方法会去调用其他 MOP 操作，这样的操作叫做衍生操作，不依赖其他操作的叫做基础操作。</p>
+<p><strong>Proxies 中的 MOP</strong></p>
+<p>Proxies 中的 MOP 同一般对象不同，对于一般的对象，衍生操作调用其他操作，而在 Proxy 中，每个操作不是被 handler 劫持就是转发到 target 上。</p>
+<p>什么样的操作应当被 proxy 劫持呢？答案之一是只应用于基础操作上，应用在某些衍生操作上也是可以的。在衍生操作使用 Proxy 的一个好处是可以提高性能并且使用上更方便，如果 <code>get</code> 上没有 proxy，那么你只能通过 <code>getOwnPropertyDescriptor</code> 来实现了，这样做有一个很大的问题就是 <code>get</code> 返回的值可能和 <code>getOwnPropertyDescriptor</code> 里保存的值并不一样。</p>
+<p><strong>什么样的操作应当被劫持？</strong></p>
+<p>你不能劫持语言中所有的操作，为什么有的操作不能被劫持呢？原因有两个：</p>
+<p>首先，稳定的操作是不能被劫持的，一个操作如果总是传入同样的参数总是返回同样的结果，那么它就是稳定的，如果它被 Proxy 劫持就会变得不稳定、不可靠。严格等于（===）就是一个稳定的操作，它不能被 Proxy 劫持。</p>
+<p>第二个原因是劫持意味着你可以运行通畅情况下不能执行的自定义代码，这种代码越多，程序越难 debug。</p>
+<p><strong> <code>get</code> 对比 <code>invoke</code> </strong></p>
+<p>如果你想要通过 ES6 Proxy 创建虚拟方法，你必须通过 <code>get</code> 接口返回一个函数，这就带来了一个问题：为什么不创建一个新的方法（比如叫 <code>invoke</code>）来帮助我们区分：</p>
+<ul>
+<li>通过 <code>obj.prop</code> 获取属性</li>
+<li>通过 <code>obj.prop()</code> 调用方法</li>
+</ul>
+<p>不这么做的原因有两个：</p>
+<p>首先，并不是所有的实现都会区分 <code>get</code> 和 <code>invoke</code>，<a href="https://mail.mozilla.org/pipermail/es-discuss/2010-May/011062.html" target="_blank" rel="noopener">Apple 的  JavascriptCore</a> 就是一个例子。</p>
+<p>其次，取出一个方法并且之后用 <code>call()</code> 或 <code>apply()</code> 调用应当同直接调用这个方法是一样的效果，下面的代码中这两种调用方式应当是等价的，如果我们额外创建了一个 <code>invoke</code> 方法，那么就很难维护它们之间相等了。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 直接调用方法</span></span><br><span class="line"><span class="keyword">let</span> result = obj.m();</span><br><span class="line">    </span><br><span class="line"><span class="comment">// 取出方法并通过 `call` 调用</span></span><br><span class="line"><span class="keyword">let</span> m = obj.m;</span><br><span class="line"><span class="keyword">let</span> result = m.call(obj);</span><br></pre></td></tr></table></figure>
+<p><strong>唯一需要 invoke 的可能性</strong></p>
+<p>有的场景如果不区分调用和获取你就无法完成，通过目前的 Proxy API 是无法完成的，举两个例子：auto-binding 和劫持不存在的方法。</p>
+<p>首先，通过把对象 obj 的 prototype 设置成一个 proxy 就可以自动绑定方法了：</p>
+<ul>
+<li>通过 <code>obj.m</code> 获取方法 m 的值，返回一个方法，它的 this 指向 obj</li>
+<li><code>obj.m()</code> 进行方法调用</li>
+</ul>
+<p>Auto-binding 在方法被用作回调函数的时候很有用，举个例子：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> boundMethod = obj.m;</span><br><span class="line"><span class="keyword">let</span> result = boundMethod();</span><br></pre></td></tr></table></figure>
+<p>第二点，invoke 可以实现前面提到的 firefox 支持的特性 <code>__noSuchMethod__</code>，obj 的原型会被设置成一个 proxy，它会根据访问未知的属性 <code>foo</code> 的方式不同而有不同的表现：</p>
+<ul>
+<li>如果仅仅只是访问 <code>obj.foo</code> 那么会返回 <code>undefined</code></li>
+<li>如果是调用 <code>obj.foo()</code> 那么 proxy 就会劫持这个方法返回自定义的内容</li>
+</ul>
+<h3 id="4-5-强制-Proxy-的不变性"><a href="#4-5-强制-Proxy-的不变性" class="headerlink" title="4.5 强制 Proxy 的不变性"></a>4.5 强制 Proxy 的不变性</h3><p>在我们讨论不变性以及如何保证 proxy 的不变性之前，让我们先回顾一下如何通过 non-extensibility 和 non-configurability 来保护对象。</p>
+<p><strong>保护对象</strong></p>
+<p>保护对象有两种方式：</p>
+<ul>
+<li>non-extensibility 保护对象</li>
+<li>non-configurability 保护属性</li>
+</ul>
+<p><strong>Non-extensibility</strong>：如果一个对象是不可拓展的，那么你不能给它添加属性或者修改它的属性：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">'use strict'</span>; <span class="comment">// 开启严格模式以抛出 TypeError 错误</span></span><br><span class="line">    </span><br><span class="line"><span class="keyword">let</span> obj = <span class="built_in">Object</span>.preventExtensions(&#123;&#125;);</span><br><span class="line"><span class="built_in">console</span>.log(<span class="built_in">Object</span>.isExtensible(obj)); <span class="comment">// false</span></span><br><span class="line">obj.foo = <span class="number">123</span>; <span class="comment">// TypeError: object is not extensible</span></span><br><span class="line"><span class="built_in">Object</span>.setPrototypeOf(obj, <span class="literal">null</span>); <span class="comment">// TypeError: object is not extensible</span></span><br></pre></td></tr></table></figure>
+<p><strong> Non-configurability</strong>：一个属性的所有数据都存在 <code>attributes</code> 里面，一个属性就好像一条记录，而 <code>attributes</code> 是这条记录的字段，举几个例子：</p>
+<ul>
+<li>attribute value 代表属性的值</li>
+<li>attribute writable 是一个布尔值，表示属性的值是否可以修改</li>
+<li>attribute configurable 也是一个布尔值，表示属性的 attribute 是否可以修改</li>
+</ul>
+<p>所以如果一个属性是 non-writable 并且 non-configurable，那么它永远是一个只读的属性：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">'use strict'</span>;</span><br><span class="line">    </span><br><span class="line"><span class="keyword">let</span> obj = &#123;&#125;;</span><br><span class="line"><span class="built_in">Object</span>.defineProperty(obj, <span class="string">'foo'</span>, &#123;</span><br><span class="line">  value: <span class="number">123</span>,</span><br><span class="line">  writable: <span class="literal">false</span>,</span><br><span class="line">  configurable: <span class="literal">false</span></span><br><span class="line">&#125;);</span><br><span class="line"><span class="built_in">console</span>.log(obj.foo); <span class="comment">// 123</span></span><br><span class="line">obj.foo = <span class="string">'a'</span>; <span class="comment">// TypeError: Cannot assign to read only property</span></span><br><span class="line">    </span><br><span class="line"><span class="built_in">Object</span>.defineProperty(obj, <span class="string">'foo'</span>, &#123;</span><br><span class="line">  configurable: <span class="literal">true</span></span><br><span class="line">&#125;); <span class="comment">// TypeError: Cannot redefine property</span></span><br></pre></td></tr></table></figure>
+<p>更多细节（包括 Object.defineProperty() 的原理）可以在「Speaking Javascript 」中的这两个章节看到：</p>
+<ul>
+<li><a href="http://speakingjs.com/es5/ch17.html#property_attributes" target="_blank" rel="noopener">Property Attributes and Property Descriptors</a></li>
+<li><a href="http://speakingjs.com/es5/ch17.html#protecting_objects" target="_blank" rel="noopener">Protecting Objects</a></li>
+</ul>
+<p><strong>强制不变性</strong></p>
+<p>通常，non-extensibility 和 non-configurability 意味着：</p>
+<ul>
+<li>通用：它们可以用于任何对象</li>
+<li>单向：一旦开启就不能改变</li>
+</ul>
+<p>Proxy API 通过检查 handler 方法的参数和返回值保证了不变性，下面是几个不变性的例子和 Proxy 是如何强制执行它们（文末会有一个详细的列表）：</p>
+<ul>
+<li>不变性：Object.isExtensible(obj) 必须返回一个布尔值</li>
+<li>通过强制要求 handler 返回的值是一个布尔值</li>
+<li>不变性：Object.getOwnPropertyDescriptor(obj, ···) 必须返回一个对象或者 undefined</li>
+<li>当 handler 没有返回期望的值时抛出一个 TypeError</li>
+<li>不变性：如果 Object.preventExtensions(obj) 返回了 <code>true</code> 那么之后任何调用必须返回 <code>false</code> 并且 obj 必须是 non-extensible 的</li>
+<li>如果 target 对象不可拓展且 handler 方法返回 true，抛出一个 TypeError</li>
+<li>不变性：一旦一个对象是 non-extensible 的，Object.isExtensible(obj) 必须总是返回 <code>false</code></li>
+<li>当 handler 返回的结果同 Object.isExtensible(target) 返回的不等时，抛一个 TypeError 错误</li>
+</ul>
+<p>强制不变性有以下几个好处：</p>
+<ul>
+<li>同其他对象一样，Proxy 也有可拓展性和可配置性，因此得以控制它的不变性，这一点是在允许虚拟化受保护对象下实现的</li>
+<li>一个受保护的对象不能被 proxy 修改它的本质，这种修改会造成 bug 和恶意的代码</li>
+</ul>
+<p>下面的章节举了几个强制不变性的例子</p>
+<p><strong>例子：non-extensible 的原型必须如实返回</strong></p>
+<p>如果目标对象是不可拓展的，<code>getPrototypeOf</code> 的劫持必须返回目标对象的原型。</p>
+<p>为了证明这一点，我们创建一个 handler 返回一个同目标对象原型不同的值：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> fakeProto = &#123;&#125;;</span><br><span class="line"><span class="keyword">let</span> handler = &#123;</span><br><span class="line">  getPrototypeOf(t) &#123;</span><br><span class="line">    <span class="keyword">return</span> fakeProto;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>当目标对象是可拓展的时候，伪造原型可以成功：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> extensibleTarget = &#123;&#125;;</span><br><span class="line"><span class="keyword">let</span> ext = <span class="keyword">new</span> <span class="built_in">Proxy</span>(extensibleTarget, handler);</span><br><span class="line"><span class="built_in">console</span>.log(<span class="built_in">Object</span>.getPrototypeOf(ext) === fakeProto); <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<p>然而在一个不可拓展的对象上就会报错：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> nonExtensibleTarget = &#123;&#125;;</span><br><span class="line"><span class="built_in">Object</span>.preventExtensions(nonExtensibleTarget);</span><br><span class="line"><span class="keyword">let</span> nonExt = <span class="keyword">new</span> <span class="built_in">Proxy</span>(nonExtensibleTarget, handler);</span><br><span class="line"><span class="built_in">Object</span>.getPrototypeOf(nonExt); <span class="comment">// TypeError</span></span><br></pre></td></tr></table></figure>
+<p><strong>例子：不可写和不可配置的对象属性必须如实反映</strong></p>
+<p>如果目标对象有一个既不可写又不可配置的属性，那么在 get 劫持中，handler 必须如实返回这个属性的值。为了证明这一点，我们创建一个为所有属性返回同样的值的 Proxy：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> handler = &#123;</span><br><span class="line">  get(target, propKey) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">'abc'</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">let</span> target = <span class="built_in">Object</span>.defineProperties(</span><br><span class="line">  &#123;&#125;, &#123;</span><br><span class="line">    foo: &#123;</span><br><span class="line">      value: <span class="number">123</span>,</span><br><span class="line">      writable: <span class="literal">true</span>,</span><br><span class="line">      configurable: <span class="literal">true</span></span><br><span class="line">    &#125;,</span><br><span class="line">    bar: &#123;</span><br><span class="line">      value: <span class="number">456</span>,</span><br><span class="line">      writable: <span class="literal">false</span>,</span><br><span class="line">      configurable: <span class="literal">false</span></span><br><span class="line">    &#125;,</span><br><span class="line">&#125;);</span><br><span class="line"><span class="keyword">let</span> proxy = <span class="keyword">new</span> <span class="built_in">Proxy</span>(target, handler);</span><br></pre></td></tr></table></figure>
+<p>属性 <code>target.foo</code>  没有同时配置 non-writable 和 non-configurable，这意味着我们可以返回一个伪造的值：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; proxy.foo</span><br><span class="line"><span class="string">'abc'</span></span><br></pre></td></tr></table></figure>
+<p>然而 <code>target.bar</code> 既不可写又不可配置，因此我们可以伪造它的值：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; proxy.bar</span><br><span class="line">TypeError: Invariant check failed</span><br></pre></td></tr></table></figure>
+<h2 id="5-Proxy-API"><a href="#5-Proxy-API" class="headerlink" title="5. Proxy API"></a>5. Proxy API</h2><p>本节会快速的介绍一下 proxy API：包括全局对象 Proxy 和 Reflect</p>
+<h3 id="5-1-创建-proxy"><a href="#5-1-创建-proxy" class="headerlink" title="5.1 创建 proxy"></a>5.1 创建 proxy</h3><p>创建一个 Proxy 有两种方式：</p>
+<ul>
+<li>proxy = new Proxy(target, handler)<br>通过传入目标对象和 handler 创建一个 proxy</li>
+<li>{proxy, revoke} = Proxy.revocable(target, handler)<br>创建一个可以通过 revoke 函数销毁的 proxy，revoke 可以调用很多次，但是在第一次调用过后任何对 proxy 的操作都会导致 TypeError 的异常</li>
+</ul>
+<h3 id="5-2-Handler-方法"><a href="#5-2-Handler-方法" class="headerlink" title="5.2 Handler 方法"></a>5.2 Handler 方法</h3><p>本节主要介绍 handler 对象可以拦截的方法有哪些和哪些操作会触发拦截器，有的拦截会返回布尔值，<code>has</code> 和 <code>isExtensible</code> 的拦截器返回的布尔值代表操作的结果，而其他返回布尔值的拦截器表示操作是否成功。</p>
+<p>所有对象的拦截器：</p>
+<ul>
+<li>defineProperty(target, propKey, propDesc) → boolean<br>Object.defineProperty(proxy, propKey, propDesc)</li>
+<li>deleteProperty(target, propKey) → boolean<br>delete proxy[propKey]<br>delete proxy.foo // propKey = ‘foo’</li>
+<li>enumerate(target) → Iterator<br>for (x in proxy) ···</li>
+<li>get(target, propKey, receiver) → any<br>receiver[propKey]<br>receiver.foo // propKey = ‘foo’</li>
+<li>getOwnPropertyDescriptor(target, propKey) → PropDesc|Undefined<br>Object.getOwnPropertyDescriptor(proxy, propKey)</li>
+<li>getPrototypeOf(target) → Object|Null<br>Object.getPrototypeOf(proxy)</li>
+<li>has(target, propKey) → boolean<br>propKey in proxy</li>
+<li>isExtensible(target) → boolean<br>Object.isExtensible(proxy)</li>
+<li>ownKeys(target) → Array<propertykey><br>Object.getOwnPropertyPropertyNames(proxy) (只可以用于类型为 String 的键)<br>Object.getOwnPropertyPropertySymbols(proxy) (只可以用于类型为 Symbol 的键）<br>Object.keys(proxy) (只可用于可枚举的类型为 String 的键，可枚举性通过 Object.getOwnPropertyDescriptor 检查)</propertykey></li>
+<li>preventExtensions(target) → boolean<br>Object.preventExtensions(proxy)</li>
+<li>set(target, propKey, value, receiver) → boolean<br>receiver[propKey] = value<br>receiver.foo = value // propKey = ‘foo’</li>
+<li>setPrototypeOf(target, proto) → boolean<br>Object.setPrototypeOf(proxy, proto)</li>
+</ul>
+<p>函数的拦截器：</p>
+<ul>
+<li>apply(target, thisArgument, argumentsList) → any<br>proxy.apply(thisArgument, argumentsList)<br>proxy.call(thisArgument, …argumentsList)<br>proxy(…argumentsList)</li>
+<li>construct(target, argumentsList) → Object<br>new proxy(..argumentsList)</li>
+</ul>
+<p><strong>基础操作 vs 衍生操作</strong></p>
+<p>下面的几个操作是基础的，它们的功能不依赖其他操作：</p>
+<ul>
+<li>apply</li>
+<li>defineProperty</li>
+<li>deleteProperty</li>
+<li>getOwnPropertyDescriptor</li>
+<li>getPrototypeOf</li>
+<li>isExtensible</li>
+<li>ownKeys</li>
+<li>preventExtensions</li>
+<li>setPrototypeOf</li>
+</ul>
+<p>剩下其余的操作都是衍生的，它们可以通过基础操作实现，举个例子：获取对象的属性可以通过使用 <code>getPrototypeOf</code> 遍历对象的原型链然后对每个成员调用 <code>getOwnPropertyDescriptor</code> 知道找到属性或者达到原型链顶端。</p>
+<h3 id="5-3-不变性"><a href="#5-3-不变性" class="headerlink" title="5.3 不变性"></a>5.3 不变性</h3><p>不变性是对 handler 安全性的约束，本节主要列举 proxy API 的不变性以及它是如何保证的。下面，当你读到「handler 必须这样做」时，这意味着如果它的行为不符合就会抛出一个 TypeError，有的不变性限制返回值，而其他的是限制参数。保证返回值合法的方式有两种：通常，不合法的返回值会抛出一个 TypeError 异常，当需要返回布尔值的时候会强制将不合法的值转化为布尔值。</p>
+<p>下面是所有强制不变性的列表（来自：<a href="https://people.mozilla.org/~jorendorff/es6-draft.html#sec-proxy-object-internal-methods-and-internal-slots" target="_blank" rel="noopener">ECMAScript 6 标准</a>）：</p>
+<ul>
+<li>apply(target, thisArgument, argumentsList)<br>没有不变性的限制</li>
+<li>construct(target, argumentsList)<br>返回的值必须是对象（不能是 null 或者基础类型）</li>
+<li>defineProperty(target, propKey, propDesc)<br>如果 target 是不可拓展的，那么 propDesc 不能创建一个 target 没有的属性<br>如果 propDesc 将属性 configurable 设置为 false，那么 target 必须有一个不可配置的键：propKey<br>如果 propDesc 尝试去重新定义 target 已有的属性，如果这次操作中违反了 writable 和 configurable 导致了异常，那么 handler 不能返回不可配置的属性是可配置的，而且不能给一个不可配置 + 不可写的属性返回一个与其原始值不同的值。</li>
+<li>getPrototypeOf(target)<br>返回值必须是对象或者 null<br>如果目标对象是不可拓展的，handler 必须返回目标对象的原型</li>
+<li>has(target, propKey)<br>handler 必须隐藏（通过返回不存在）目标不可配置的属性<br>如果目标对象是不可拓展的，那么它自己的属性是不可被隐藏的</li>
+<li>isExtensible(target)<br>handler 的返回结果会被强制转化为布尔值<br>转化为布尔值之后的返回值必须同 <code>target.isExtensible()</code> 的结果相等</li>
+<li>ownKeys(target)<br>handler 必须返回一个对象，这个对象会被当作一个 array-like 的值并且转成数组<br>返回的每个元素必须是字符串或者 symbol<br>返回结果必须包括目标对象所有不可配置的属性<br>如果目标对象是不可拓展的，那么返回结果必须等于目标对象所有的属性（不能有其他的值）</li>
+<li>preventExtensions(target)<br>handler 的返回结果会被强制转换成布尔值<br>如果 handler 返回了一个 truthy 的值（意味着操作成功了），那么之后调用 <code>target.isExtensible()</code> 必须返回 false</li>
+<li>set(target, propKey, value, receiver)<br>如果 target 的 propKey 属性是不可写 + 不可配置的，那么返回值必须等于原始值<br>如果 target 有一个不可配置 + 没有 setter 的属性，那么抛出一个 TypeError（这样的属性不可能写）</li>
+<li>setPrototypeOf(target, proto)<br>返回结果会被强制转化为布尔值<br>如果目标对象是不可拓展的，那么原型也不可以改变。这一点是如何保证的？如果目标对象是不可拓展的并且 handler 返回了 truthy 的值（意味着改变成功了）那么 proto 必须同 target 的 prototype 相同，否则抛出一个 TypeError</li>
+</ul>
+
+
+                <hr>
+
+                
+
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/2017/03/18/tasks-microtasks-queue-schedule/" data-toggle="tooltip" data-placement="top" title="「译」Tasks, microtasks, 队列和执行顺序">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/2017/02/08/web-notification/" data-toggle="tooltip" data-placement="top" title="开启 Web 桌面通知">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#javascript es6 proxy" title="javascript es6 proxy">javascript es6 proxy</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="https://yemengying.com" target="_blank">Giraffe&#39;s Home</a></li>
+                    
+                </ul>
+                
+            </div>
+
+        </div>
+    </div>
+</article>
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "klamtine";
+    var disqus_identifier = "https://shijianan.com/2017/02/13/es6-proxies/";
+    var disqus_url = "https://shijianan.com/2017/02/13/es6-proxies/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                    <li>
+                        <a target="_blank" href="https://twitter.com/jiananshi">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+                
+
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank" href="https://github.com/jiananshi">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; 小森林 2019 
+                    <br>
+                    Theme by <a href="http://huangxuan.me">Hux</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    Ported by <a href="http://blog.kaijun.rocks">Kaijun</a> | 
+                    <iframe style="margin-left: 2px; margin-bottom:-5px;" frameborder="0" scrolling="0" width="91px" height="20px" src="https://ghbtns.com/github-btn.html?user=kaijun&repo=hexo-theme-huxblog&type=star&count=true">
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://shijianan.com/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-134767726-1';
+    var _gaDomain = 'shijianan.com';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- Side Catalog -->
+
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="https://shijianan.com/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

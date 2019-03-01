@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword" content="小森林，Web">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>
+        
+          「译」Symbols in ECMAScript 6 - jiananshi
+        
+    </title>
+
+    <link rel="canonical" href="https://shijianan.com/2017/01/17/javascript-symbol/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">小森林</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archives/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $ = document.querySelector.bind(document);
+    var $toggle = $('.navbar-toggle');
+    var $navbar = $('#huxblog_navbar');
+    var $collapse = $('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    
+<!-- Image to hack wechat -->
+<!-- <img src="https://shijianan.com/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('///pic.yupoo.com/jiananshi/7f720625/9c9c26ad.jpg')
+        
+    }
+</style>
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                    </div>
+                    <h1>「译」Symbols in ECMAScript 6</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by jiananshi on
+                        2017-01-17
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <p>Symbol 是 ES6 中一个新的原始类型，这篇博客解释了它的原理。</p>
+<h2 id="1-一个新的原始类型"><a href="#1-一个新的原始类型" class="headerlink" title="1. 一个新的原始类型"></a>1. 一个新的原始类型</h2><p>ES6 带来了一个新的基础类型：Symbol，它可以被作为独一无二的 ID 来使用，，通过调用工厂函数 <code>Symbol()</code> 创建一个 symbol（类似把 <code>String</code> 作为函数调用时会返回 string 一样）。</p>
+<p><code>let symbol1 = Symbol();</code></p>
+<p><code>Symbol()</code> 有一个可选的字符串参数：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="keyword">let</span> symbol2 = <span class="built_in">Symbol</span>(<span class="string">'symbol2'</span>);</span><br><span class="line">&gt; <span class="built_in">String</span>(symbol2)</span><br><span class="line"><span class="string">'Symbol(symbol2)'</span></span><br></pre></td></tr></table></figure>
+<p><code>Symbol()</code> 返回的每一个 symbol 都是独一无二的：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; symbol1 === symbol2</span><br><span class="line"><span class="literal">false</span></span><br></pre></td></tr></table></figure>
+<p>用 typeof 去检测 symbol 可以确认 symbol 是一个原始类型：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="keyword">typeof</span> symbol1</span><br><span class="line"><span class="string">'symbol'</span></span><br></pre></td></tr></table></figure>
+<h3 id="2-1-把-symbol-用在属性键上"><a href="#2-1-把-symbol-用在属性键上" class="headerlink" title="2.1 把 symbol 用在属性键上"></a>2.1 把 symbol 用在属性键上</h3><p>Symbols 可以用于属性的键：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> MY_KEY = <span class="built_in">Symbol</span>();</span><br><span class="line"><span class="keyword">let</span> obj = &#123;&#125;;</span><br><span class="line"></span><br><span class="line">obj[MY_KEY] = <span class="number">123</span>;</span><br><span class="line"><span class="built_in">console</span>.log(obj[MY_KEY]); <span class="comment">// 123</span></span><br></pre></td></tr></table></figure>
+<p>Class 和对象字面量有一个特性叫做 computed property keys：你可以通过把表达式用中括号包裹作为属性的键，下面的代码中我们把 <code>MY_KEY</code> 用作对象的键：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> MY_KEY = <span class="built_in">Symbol</span>();</span><br><span class="line"><span class="keyword">let</span> obj = &#123;</span><br><span class="line">  [MY_KEY]: <span class="number">123</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>方法的定义也可以使用 computed key：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> FOO = <span class="built_in">Symbol</span>();</span><br><span class="line"><span class="keyword">let</span> obj = &#123;</span><br><span class="line">  [FOO]() &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">'bar'</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="built_in">console</span>.log(obj[FOO]()); <span class="comment">// bar</span></span><br></pre></td></tr></table></figure>
+<h3 id="2-2-枚举属性"><a href="#2-2-枚举属性" class="headerlink" title="2.2 枚举属性"></a>2.2 枚举属性</h3><p>下面我们创建一个对象来检验枚举属性的 API：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> obj = &#123;</span><br><span class="line">  [<span class="built_in">Symbol</span>(<span class="string">'my_key'</span>)]: <span class="number">1</span>,</span><br><span class="line">  enum: <span class="number">2</span>,</span><br><span class="line">  nonEnum: <span class="number">3</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="built_in">Object</span>.defineProperty(obj,</span><br><span class="line">  <span class="string">'nonEnum'</span>, &#123; <span class="attr">enumerable</span>: <span class="literal">false</span> &#125;);</span><br></pre></td></tr></table></figure>
+<p><code>Object.getOwnPropertyNames()</code> 忽略了 symbol 类型的属性键：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="built_in">Object</span>.getOwnPropertyNames(obj)</span><br><span class="line">[<span class="string">'enum'</span>, <span class="string">'nonEnum'</span>]</span><br></pre></td></tr></table></figure>
+<p><code>Object.getOwnPropertySymbols()</code> 忽略了 string 类型的属性键：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="built_in">Object</span>.getOwnPropertySymbols(obj)</span><br><span class="line">[<span class="built_in">Symbol</span>(my_key)]</span><br></pre></td></tr></table></figure>
+<p><code>Reflect.ownKeys()</code> 会返回所有 key：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="built_in">Reflect</span>.ownKeys(obj)</span><br><span class="line">[<span class="built_in">Symbol</span>(my_key), <span class="string">'enum'</span>, <span class="string">'nonEnum'</span>]</span><br></pre></td></tr></table></figure>
+<p><code>Object.keys()</code> 并不像它的名字那样有用，它只作用于字符串类型并且可以枚举的 key：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="built_in">Object</span>.keys(obj)</span><br><span class="line">[<span class="string">'enum'</span>]</span><br></pre></td></tr></table></figure>
+<h3 id="2-3-使用-Symbol-作为常量"><a href="#2-3-使用-Symbol-作为常量" class="headerlink" title="2.3 使用 Symbol 作为常量"></a>2.3 使用 Symbol 作为常量</h3><p>ES5 中通常使用 string 来作为常量：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> COLOR_RED    = <span class="string">'RED'</span>;</span><br><span class="line"><span class="keyword">var</span> COLOR_ORANGE = <span class="string">'ORANGE'</span>;</span><br><span class="line"><span class="keyword">var</span> COLOR_YELLOW = <span class="string">'YELLOW'</span>;</span><br><span class="line"><span class="keyword">var</span> COLOR_GREEN  = <span class="string">'GREEN'</span>;</span><br><span class="line"><span class="keyword">var</span> COLOR_BLUE   = <span class="string">'BLUE'</span>;</span><br><span class="line"><span class="keyword">var</span> COLOR_VIOLET = <span class="string">'VIOLET'</span>;</span><br></pre></td></tr></table></figure>
+<p>然而 string 并不像我们想象的那样不容易冲突，我们来看一个例子：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getComplement</span>(<span class="params">color</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">switch</span> (color) &#123;</span><br><span class="line">    <span class="keyword">case</span> COLOR_RED:</span><br><span class="line">      <span class="keyword">return</span> COLOR_GREEN;</span><br><span class="line">    <span class="keyword">case</span> COLOR_ORANGE:</span><br><span class="line">      <span class="keyword">return</span> COLOR_BLUE;</span><br><span class="line">    <span class="keyword">case</span> COLOR_YELLOW:</span><br><span class="line">      <span class="keyword">return</span> COLOR_VIOLET;</span><br><span class="line">    <span class="keyword">case</span> COLOR_GREEN:</span><br><span class="line">      <span class="keyword">return</span> COLOR_RED;</span><br><span class="line">    <span class="keyword">case</span> COLOR_BLUE:</span><br><span class="line">      <span class="keyword">return</span> COLOR_ORANGE;</span><br><span class="line">    <span class="keyword">case</span> COLOR_VIOLET:</span><br><span class="line">      <span class="keyword">return</span> COLOR_YELLOW;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> Exception(<span class="string">'Unknown color: '</span>+color);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>值得一提的是你可以在 switch 的 case 里使用任何表达式：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">isThree</span>(<span class="params">x</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">switch</span> (x) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">1</span> + <span class="number">1</span> + <span class="number">1</span>:</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>虽然我们现在通过常量（COLOR_RED 等等）来表示而不是 hardcode，但仍会有些问题：</p>
+<p><code>var MOOD_BLUE = &#39;BLUE’;</code></p>
+<p>现在 ‘BLUE’ 不再唯一了而且 MODE_BLUE，把它传进 <code>getComplement</code> 函数会返回 <code>ORANGE</code> 而不是我们期望的抛错。</p>
+<p>下面我们用 Symbol 修复这个问题，同时我们也可以用 ES6 中的 const 让我们创建一个 “真正的” 常量（你不能改变常量的值，但常量本身可能是可变的）。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> COLOR_RED    = <span class="built_in">Symbol</span>();</span><br><span class="line"><span class="keyword">const</span> COLOR_ORANGE = <span class="built_in">Symbol</span>();</span><br><span class="line"><span class="keyword">const</span> COLOR_YELLOW = <span class="built_in">Symbol</span>();</span><br><span class="line"><span class="keyword">const</span> COLOR_GREEN  = <span class="built_in">Symbol</span>();</span><br><span class="line"><span class="keyword">const</span> COLOR_BLUE   = <span class="built_in">Symbol</span>();</span><br><span class="line"><span class="keyword">const</span> COLOR_VIOLET = <span class="built_in">Symbol</span>();</span><br></pre></td></tr></table></figure>
+<p>Symbol 返回的每个值都是独一无二的，所以任何一个值都不会出现之前同 <code>BLUE</code> 冲突的情况，即使我们用 Symbol 替代了 string，<code>getComplement()</code> 的代码依然一行都不用改。</p>
+<h2 id="3-将-Symbol-作为属性键名"><a href="#3-将-Symbol-作为属性键名" class="headerlink" title="3. 将 Symbol 作为属性键名"></a>3. 将 Symbol 作为属性键名</h2><p>创建永远不会冲突的 key 在两种场景下非常有用：</p>
+<ul>
+<li>有其他的对象通过 mixins 将属性设置到同一个对象上</li>
+<li>保持 meta-level 不同 base-level 属性冲突</li>
+</ul>
+<h3 id="3-1-Symbol-用作内部属性的-key"><a href="#3-1-Symbol-用作内部属性的-key" class="headerlink" title="3.1 Symbol 用作内部属性的 key"></a>3.1 Symbol 用作内部属性的 key</h3><p>Mixin 是暴露出来一组方法，你可以把它拓展到属性或原型上，如果它们的 key 都是 symbol 它们就不会和其他 mixin 方法或者内部方法冲突。</p>
+<p>对象的公共方法是可见的，为了使用上方便通常我们更愿意用 string 作为 key，然而内部私有方法只需要暴露给 mixin，它们的 key 适合用 symbol。</p>
+<p>Symbol 并不能完全保证私有性，因为遍历出一个对象的 symbol 属性很容易，不过可以保证 key 不冲突通常已经可以满足需求了。如果你的的确确需要确保不被外部访问，你应当使用 <code>WeakMap</code> 或者 <code>closure</code>：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 每个私有属性对应一个 WeakMap</span></span><br><span class="line"><span class="keyword">const</span> PASSWORD = <span class="keyword">new</span> <span class="built_in">WeakMap</span>();</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Login</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>(name, password) &#123;</span><br><span class="line">    <span class="keyword">this</span>.name = name;</span><br><span class="line">    PASSWORD.set(<span class="keyword">this</span>, password);</span><br><span class="line">  &#125;</span><br><span class="line">  hasPassword(pw) &#123;</span><br><span class="line">    <span class="keyword">return</span> PASSWORD.get(<span class="keyword">this</span>) === pw;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>Login</code> 的实例就是 WeakMap <code>PASSWORD</code> 的 key，<code>WeakMap</code> 不会阻止实例被 GC，任何 key 是不存在的 Object 的都会被从 WeakMap 中移除。</p>
+<p>使用 symbol 来实现如下：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> PASSWORD = <span class="built_in">Symbol</span>();</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Login</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>(name, password) &#123;</span><br><span class="line">    <span class="keyword">this</span>.name = name;</span><br><span class="line">    <span class="keyword">this</span>[PASSWORD] = password;</span><br><span class="line">  &#125;</span><br><span class="line">  hasPassword(pw) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>[PASSWORD] === pw;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="3-2-Symbol-用作-meta-level-属性的-key"><a href="#3-2-Symbol-用作-meta-level-属性的-key" class="headerlink" title="3.2 Symbol 用作 meta-level 属性的 key"></a>3.2 Symbol 用作 meta-level 属性的 key</h3><p>Symbol 的唯一性使得它很适合用作公共的 meta-level 属性 key，因为 meta-level 属性 key 要避免同普通的 key 冲突。</p>
+<p>在 ES6 中，一个对象如果有 Symbol.iterator 这个 key，那么它就是 iterable 的。下面的代码中，obj 就是 iterable 的：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> obj = &#123;</span><br><span class="line">  data: [ <span class="string">'hello'</span>, <span class="string">'world'</span> ],</span><br><span class="line">  [<span class="built_in">Symbol</span>.iterator]() &#123;</span><br><span class="line">    <span class="keyword">const</span> self = <span class="keyword">this</span>;</span><br><span class="line">    <span class="keyword">let</span> index = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      next() &#123;</span><br><span class="line">        <span class="keyword">if</span> (index &lt; self.data.length) &#123;</span><br><span class="line">          <span class="keyword">return</span> &#123;</span><br><span class="line">            value: self.data[index++]</span><br><span class="line">          &#125;;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          <span class="keyword">return</span> &#123; <span class="attr">done</span>: <span class="literal">true</span> &#125;;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p><code>obj</code> 的可遍历性允许你用 <code>for-of</code> 来遍历它：</p>
+<p><code>for (let x of obj) console.log(x)</code></p>
+<h2 id="4-通过-Symbol-跨越执行领域"><a href="#4-通过-Symbol-跨越执行领域" class="headerlink" title="4. 通过 Symbol 跨越执行领域"></a>4. 通过 Symbol 跨越执行领域</h2><p>代码的执行领域指代码所在的上下文，它包括了：全局变量、加载进来的模块等等，虽然代码只存在于一个领域，但是它是有可能访问到另一个领域的代码的。举个例子，在浏览器中每一个标签页都有自己的领域，但是正如下面的代码，执行流可以从一个标签页到另一个：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="actionscript">    <span class="function"><span class="keyword">function</span> <span class="title">test</span><span class="params">(arr)</span> </span>&#123;</span></span><br><span class="line"><span class="actionscript">      <span class="keyword">var</span> iframe = frames[<span class="number">0</span>];</span></span><br><span class="line"><span class="actionscript">      <span class="comment">// 这段代码和 iframe 的代码在两个不同领域</span></span></span><br><span class="line"><span class="actionscript">      <span class="comment">// 因此全局变量，比如 Array 是不同的：</span></span></span><br><span class="line"><span class="javascript">      <span class="built_in">console</span>.log(<span class="built_in">Array</span> === iframe.Array); <span class="comment">// false</span></span></span><br><span class="line"><span class="javascript">      <span class="built_in">console</span>.log(arr <span class="keyword">instanceof</span> <span class="built_in">Array</span>); <span class="comment">// false</span></span></span><br><span class="line"><span class="javascript">      <span class="built_in">console</span>.log(arr <span class="keyword">instanceof</span> iframe.Array); <span class="comment">// true</span></span></span><br><span class="line"><span class="undefined"></span></span><br><span class="line"><span class="actionscript">      <span class="comment">// 但是，Symbol 是相同的</span></span></span><br><span class="line"><span class="javascript">      <span class="built_in">console</span>.log(<span class="built_in">Symbol</span>.iterator === iframe.Symbol.iterator); <span class="comment">// true</span></span></span><br><span class="line"><span class="undefined">    &#125;</span></span><br><span class="line"><span class="undefined">  </span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">iframe</span> <span class="attr">srcdoc</span>=<span class="string">"&lt;script&gt;window.parent.test([])&lt;/script&gt;"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">iframe</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>原因是每个领域都有自己的 Array 副本，因为对象是按引用传递的，所以虽然底层是一样的，但是这些本地的副本都是不等价的。同样的，lib 和客户端代码在每个领域都加载了一次，所以它们的对象也是不等的。</p>
+<p>另一面，基础类型 boolean，number 和 string 是按值传递的，所以它们的副本都是相等的。</p>
+<p>Symbols 有自己的唯一标识，所以它并不像其他基础类型那样方便的跨领域，这是 symbol 的一个问题：Symbol.iterator 应该是可以跨领域的，如果一个对象在一个领域中是 iterable 的，那么它在另一个领域也应当是同样的。如果 Javascript 引擎提供了跨领域的 Symbol，那么引擎应当可以保证在不同领域中使用的是同一个 Symbol。</p>
+<p>对于 lib 我们需要做一点额外的工作，这就涉及到全局 symbol 注册了：注册机制是可以被所有领域使用的，通过 string 指向不同的 symbol，lib 要为每个 symbol 设置一个尽可能独一无二的字符串。为了创建这样的 symbol，lib 可以询问 Symbol 某个 string 指向的 symbol，如果有的话直接返回，没有的话创建一个 symbol。</p>
+<p>通过 <code>Symbol.for()</code> 从 Symbol 获取注册过的 symbol，获取传给 <code>Symbol.keyFor()</code> symbol 获取对应的字符串：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="keyword">let</span> sym = <span class="built_in">Symbol</span>.for(<span class="string">'Hello everybody!'</span>);</span><br><span class="line">&gt; <span class="built_in">Symbol</span>.keyFor(sym)</span><br><span class="line"><span class="string">'Hello everybody!'</span></span><br></pre></td></tr></table></figure>
+<p>不出所料，Javascript 引擎提供的跨领域 Symbol： <code>Symbol.iterator</code> 没有注册的 string：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="built_in">Symbol</span>.keyFor(<span class="built_in">Symbol</span>.iterator)</span><br><span class="line"><span class="literal">undefined</span></span><br></pre></td></tr></table></figure>
+<h2 id="5-安全限制"><a href="#5-安全限制" class="headerlink" title="5. 安全限制"></a>5. 安全限制</h2><p>你在使用 Symbol 时可能会遇到两种报错：把 Symbol 作为构造函数使用和强制将 Symbol 转为字符串。</p>
+<h3 id="5-1-将-Symbol-作为构造函数"><a href="#5-1-将-Symbol-作为构造函数" class="headerlink" title="5.1 将 Symbol 作为构造函数"></a>5.1 将 Symbol 作为构造函数</h3><p>你需要通过函数调用的方式创建 symbol，这样的结果就是你很容易错误的把它当作一个构造函数来用，一个 symbol 实例对我们来说并没有什么用处，而且这样做会抛错：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="keyword">new</span> <span class="built_in">Symbol</span>()</span><br><span class="line"><span class="built_in">TypeError</span>: <span class="built_in">Symbol</span> is not a <span class="keyword">constructor</span></span><br></pre></td></tr></table></figure>
+<p>我们仍然有办法创建一个包了一层的对象，它可以把任何值转成对象，包括 symbol：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="keyword">let</span> sym = <span class="built_in">Symbol</span>();</span><br><span class="line">&gt; <span class="keyword">typeof</span> sym</span><br><span class="line"><span class="string">'symbol'</span></span><br><span class="line"></span><br><span class="line">&gt; <span class="keyword">let</span> wrapper = <span class="built_in">Object</span>(sym);</span><br><span class="line">&gt; <span class="keyword">typeof</span> wrapper</span><br><span class="line"><span class="string">'object'</span></span><br><span class="line">&gt; wrapper <span class="keyword">instanceof</span> <span class="built_in">Symbol</span></span><br><span class="line"><span class="literal">true</span></span><br></pre></td></tr></table></figure>
+<h3 id="5-2-强制把-symbol-转成-string"><a href="#5-2-强制把-symbol-转成-string" class="headerlink" title="5.2 强制把 symbol 转成 string"></a>5.2 强制把 symbol 转成 string</h3><p>既然 string 和 symbol 都可以用作属性 key，你可能会想避免使用者不小心尝试将 symbol 转成 key，举个例子：</p>
+<p><code>let propertyKey = &#39;__&#39; + anotherPropertyKey;</code></p>
+<p>ES6 会在隐式转换 string 的时候抛错（底层是通过 ToString）：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="keyword">var</span> sym = <span class="built_in">Symbol</span>(<span class="string">'My symbol'</span>);</span><br><span class="line">&gt; <span class="string">''</span> + sym</span><br><span class="line"><span class="built_in">TypeError</span>: Cannot convert a <span class="built_in">Symbol</span> value to a string</span><br></pre></td></tr></table></figure>
+<p>不过你还是可以显式的把 symbol 转化为 string：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="built_in">String</span>(sym)</span><br><span class="line"><span class="string">'Symbol(My symbol)'</span></span><br><span class="line">&gt; sym.toString()</span><br><span class="line"><span class="string">'Symbol(My symbol)</span></span><br></pre></td></tr></table></figure>
+<h2 id="6-FAQ"><a href="#6-FAQ" class="headerlink" title="6. FAQ"></a>6. FAQ</h2><h3 id="6-1-Symbol-属于基础类型还是对象"><a href="#6-1-Symbol-属于基础类型还是对象" class="headerlink" title="6.1 Symbol 属于基础类型还是对象"></a>6.1 Symbol 属于基础类型还是对象</h3><p>一方面，symbols 表现得像基础类型，另一方面，symbols 又像对象：</p>
+<ul>
+<li>Symbols 像基础类型：它们被用作属性 key 和抽象概念（比如 <code>BLUE</code>）</li>
+<li>每个 symbol 都有自己的唯一标示，这点让它像对象一样</li>
+</ul>
+<p>第二点用对象也可以替代 symbol：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> COLOR_RED = <span class="built_in">Object</span>.freeze(&#123;&#125;);</span><br><span class="line">···</span><br></pre></td></tr></table></figure>
+<p>可以通过 <code>Object.create(null)</code> 替代 <code>{}</code> 进一步压缩对象的体积，需要注意的是，对象不能用作属性的 key。</p>
+<p>那么 Symbol 到底是基础类型还是对象呢？它们最终依然是基础类型，有两个原因：</p>
+<p>首先，比起对象，Symbol 更像是 string：它们是语言的基础，它们是不可变的并且可以用作属性 key。</p>
+<p>其次，symbol 通常被用作属性 key，为了这一点很有必要重新梳理下 Javascript 规范，因为很多对象的功能都多余了：</p>
+<ul>
+<li>对象可以是其他对象的原型</li>
+<li>用 proxy 包装一个对象并不能改变它的用途</li>
+<li>Object 可以是内省的，通过：instanceof，Object.keys() 等等</li>
+</ul>
+<p>去掉这些功能会让标准更简单，而且据 V8 团队说当处理属性 key 时，基础类型比对象要容易得多。</p>
+<h3 id="6-2-String-难道不够用吗？"><a href="#6-2-String-难道不够用吗？" class="headerlink" title="6.2 String 难道不够用吗？"></a>6.2 String 难道不够用吗？</h3><p>同 string 不同的是，Symbol 是唯一的并且防止了命名冲突，Python 通过 <code>__iter__</code> 这样特殊的命名避免冲突，不过如果是 lib 呢？我们可以通过 Symbol 创建一个拓展性强、适应性广的机制，在之后我们要讲到的公共 symbol 这一节中，你会看到 Javascript 本身已经大量应用这一机制了。</p>
+<h2 id="7-Symbol-API"><a href="#7-Symbol-API" class="headerlink" title="7. Symbol API"></a>7. Symbol API</h2><h3 id="7-1-Symbol-函数"><a href="#7-1-Symbol-函数" class="headerlink" title="7.1 Symbol 函数"></a>7.1 Symbol 函数</h3><ul>
+<li>Symbol(description?) -&gt; symbol<br>会创建一个 symbol，可选参数 <code>description</code> 方便 debug，Symbol 的设计并不是一个构造函数，如果你把它当作一个构造函数使用（new Symbol）会抛错</li>
+</ul>
+<h3 id="7-2-全局-Symbol"><a href="#7-2-全局-Symbol" class="headerlink" title="7.2 全局 Symbol"></a>7.2 全局 Symbol</h3><p>有<a href="https://people.mozilla.org/~jorendorff/es6-draft.html#sec-well-known-symbols" target="_blank" rel="noopener">几个全局的 symbol</a> 可以通过 Symbol 的属性访问，它们都是对象的 key，允许你自定义 Javascript 对象的行为。</p>
+<p>下面几个基本的操作：</p>
+<ul>
+<li>Symbol.hasInstance（方法）<br>允许对象 O 自定义 <code>x instance of</code> 的行为</li>
+<li>Symbol.toPrimitive（方法）<br>允许一个对象自定义被强制转换为基础类型时的行为</li>
+<li>Symbol. toStringTag（字符串）<br>由 <code>Object.prototype.toString</code> 调用，默认返回 <code>&#39;[object &#39;+obj[Symbol.toStringTag]+’]’</code></li>
+</ul>
+<p><strong>Iteration：</strong></p>
+<ul>
+<li>Symbol.iterator（方法）<br>使一个对象 iterable，返回值是一个 iterator。</li>
+</ul>
+<p><strong>其他：</strong></p>
+<ul>
+<li>Symbol.unscopables（对象）<br>当同 <code>with</code> 一同使用时，允许对象隐藏某些属性</li>
+<li>Symbol.species（方法）<br>帮助克隆 <code>typed arrays</code> 和RegExp, ArrayBuffer 还有 Promise 的实例。</li>
+<li>Symbol.isConcatSpreadable（布尔值）<br>标示 <code>Array.prototype.concat</code> 应当同对象的元素 concat 或是同对象本身 concat。</li>
+</ul>
+<h3 id="全局-Symbol-方法"><a href="#全局-Symbol-方法" class="headerlink" title="全局 Symbol 方法"></a>全局 Symbol 方法</h3><p>如果你想要一个在所有领域都相等的 symbol，你需要通过注册到全局的 symbol 上来创建：</p>
+<ul>
+<li>Symbol.for(str) -&gt; symbol<br>通过 <code>str</code> 获取对应的 symbol，如果 <code>str</code> 尚未注册，那么这个方法会将 <code>str</code> 注册在 Symbol 下并返回。</li>
+</ul>
+<p>另一个方法允许你反过来通过 symbol 获取注册的 <code>str</code>，在序列化 symbol 的时候很有用。</p>
+<ul>
+<li>Symbol.keyFor(sym) -&gt; string<br>返回 symbol 注册在全局的 <code>str</code>，如果没有注册返回 <code>undefined</code></li>
+</ul>
+<h2 id="8-延伸阅读"><a href="#8-延伸阅读" class="headerlink" title="8. 延伸阅读"></a>8. 延伸阅读</h2><ul>
+<li><a href="http://www.2ality.com/2014/08/es6-today.html" target="_blank" rel="noopener">Using ECMAScript 6 today</a></li>
+<li><a href="http://www.2ality.com/2014/12/es6-oop.html" target="_blank" rel="noopener">ECMAScript 6: new OOP features besides classes</a></li>
+<li><a href="http://www.2ality.com/2013/06/iterators-generators.html" target="_blank" rel="noopener">Iterators and generators in ECMAScript 6</a></li>
+</ul>
+
+
+                <hr>
+
+                
+
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/2017/01/18/css-bottom-footer/" data-toggle="tooltip" data-placement="top" title="不定高度内容固定底部 footer">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/2017/01/15/javascript-reflect/" data-toggle="tooltip" data-placement="top" title="「译」Reflect in Javascript">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="https://yemengying.com" target="_blank">Giraffe&#39;s Home</a></li>
+                    
+                </ul>
+                
+            </div>
+
+        </div>
+    </div>
+</article>
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "klamtine";
+    var disqus_identifier = "https://shijianan.com/2017/01/17/javascript-symbol/";
+    var disqus_url = "https://shijianan.com/2017/01/17/javascript-symbol/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                    <li>
+                        <a target="_blank" href="https://twitter.com/jiananshi">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+                
+
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank" href="https://github.com/jiananshi">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; 小森林 2019 
+                    <br>
+                    Theme by <a href="http://huangxuan.me">Hux</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    Ported by <a href="http://blog.kaijun.rocks">Kaijun</a> | 
+                    <iframe style="margin-left: 2px; margin-bottom:-5px;" frameborder="0" scrolling="0" width="91px" height="20px" src="https://ghbtns.com/github-btn.html?user=kaijun&repo=hexo-theme-huxblog&type=star&count=true">
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://shijianan.com/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-134767726-1';
+    var _gaDomain = 'shijianan.com';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- Side Catalog -->
+
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="https://shijianan.com/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

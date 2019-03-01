@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword" content="小森林，Web">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>
+        
+          「译」深入理解 ES6 Generators - jiananshi
+        
+    </title>
+
+    <link rel="canonical" href="https://shijianan.com/2017/01/08/javascript-generator/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">小森林</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archives/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $ = document.querySelector.bind(document);
+    var $toggle = $('.navbar-toggle');
+    var $navbar = $('#huxblog_navbar');
+    var $collapse = $('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    
+<!-- Image to hack wechat -->
+<!-- <img src="https://shijianan.com/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('///pic.yupoo.com/jiananshi/7f720625/9c9c26ad.jpg')
+        
+    }
+</style>
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                    </div>
+                    <h1>「译」深入理解 ES6 Generators</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by jiananshi on
+                        2017-01-08
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <blockquote>
+<p>一直想深入学习一下 Generators，这里翻译一篇 2ality 上的文章 <a href="http://www.2ality.com/2015/03/es6-generators.html" target="_blank" rel="noopener">原文链接</a></p>
+</blockquote>
+<p>本文是 ES6 系列中的一部分：</p>
+<ul>
+<li><a href="http://www.2ality.com/2015/02/es6-iteration.html" target="_blank" rel="noopener">Iterables and iterators in ECMAScript 6</a></li>
+<li><a href="http://www.2ality.com/2015/03/es6-generators.html" target="_blank" rel="noopener">ES6 generators in depth</a></li>
+</ul>
+<p>Generators 是 ECMAScript 6 的新特性，是一个可以被暂停和恢复的函数，它有很多使用场景：iterators，异步编程，等等。这篇文章主要想写一下 generators 的原理以及介绍一下它在现实场景下的应用。</p>
+<h2 id="1-总览"><a href="#1-总览" class="headerlink" title="1. 总览"></a>1. 总览</h2><p>Generators 有两个关键的作用：</p>
+<ul>
+<li>实现 iterables</li>
+<li>阻塞异步函数调用</li>
+</ul>
+<h3 id="1-1-通过-generators-实现-iterables"><a href="#1-1-通过-generators-实现-iterables" class="headerlink" title="1.1 通过 generators 实现 iterables"></a>1.1 通过 generators 实现 iterables</h3><p>下面的函数通过对象的 properties 返回一个由 [key,value] 组成的 iterable：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// `function` 后面的 </span></span><br><span class="line"><span class="comment">// `objectEntries` 是一个 generator</span></span><br><span class="line"><span class="function"><span class="keyword">function</span>* <span class="title">objectEntries</span>(<span class="params">obj</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">let</span> propKeys = <span class="built_in">Reflect</span>.ownKeys(obj);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> propKey <span class="keyword">of</span> propKeys) &#123;</span><br><span class="line">        <span class="comment">// `yield` 返回一个值并且暂停 generator</span></span><br><span class="line">        <span class="comment">// 下一次执行函数会从上一次暂停的地方继续</span></span><br><span class="line">        <span class="keyword">yield</span> [propKey, obj[propKey]];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们稍后会详细介绍 <code>objectEntries</code> 的原理，现在让我们先来看一下它的用法：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> jane = &#123; <span class="attr">first</span>: <span class="string">'Jane'</span>, <span class="attr">last</span>: <span class="string">'Doe'</span> &#125;;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> [key,value] <span class="keyword">of</span> objectEntries(jane)) &#123;</span><br><span class="line">   <span class="built_in">console</span>.log(<span class="string">`<span class="subst">$&#123;key&#125;</span>: <span class="subst">$&#123;value&#125;</span>`</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// Output:</span></span><br><span class="line"><span class="comment">// first: Jane</span></span><br><span class="line"><span class="comment">// last: Doe</span></span><br></pre></td></tr></table></figure>
+<h3 id="1-2-阻塞异步调用"><a href="#1-2-阻塞异步调用" class="headerlink" title="1.2 阻塞异步调用"></a>1.2 阻塞异步调用</h3><p>下面的代码中我使用 <a href="https://github.com/tj/co" target="_blank" rel="noopener">co</a> 来异步读取两个 JSON 文件，函数的执行会在 A 行阻塞直到 <code>Promise.all()</code> 返回，这意味着我们可以像写同步函数一样写异步函数。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">co(<span class="function"><span class="keyword">function</span>* (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">let</span> [croftStr, bondStr] = <span class="keyword">yield</span> <span class="built_in">Promise</span>.all([  <span class="comment">// (A)</span></span><br><span class="line">            getFile(<span class="string">'http://localhost:8000/croft.json'</span>),</span><br><span class="line">            getFile(<span class="string">'http://localhost:8000/bond.json'</span>),</span><br><span class="line">        ]);</span><br><span class="line">        <span class="keyword">let</span> croftJson = <span class="built_in">JSON</span>.parse(croftStr);</span><br><span class="line">        <span class="keyword">let</span> bondJson = <span class="built_in">JSON</span>.parse(bondStr);</span><br><span class="line">    </span><br><span class="line">        <span class="built_in">console</span>.log(croftJson);</span><br><span class="line">        <span class="built_in">console</span>.log(bondJson);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'Failure to read: '</span> + e);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p><code>getFile(url)</code> 返回 url 指向的文件，稍后我们会讲解它的内部实现以及 co 的原理。</p>
+<h2 id="2-Generators-是什么？"><a href="#2-Generators-是什么？" class="headerlink" title="2. Generators 是什么？"></a>2. Generators 是什么？</h2><p>Generators 是一种可以被暂停和恢复的函数，这一特性让它有了很多应用场景。</p>
+<p>先来看一个例子：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span>* <span class="title">genFunc</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'First'</span>);</span><br><span class="line">    <span class="keyword">yield</span>; <span class="comment">// (A)</span></span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'Second'</span>); <span class="comment">// (B)</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>genFunc</code> 和普通的函数声明有两个最主要的区别：</p>
+<ul>
+<li>它以 <code>function*</code> 开头</li>
+<li>由于 <code>yield</code>，它在执行过程中暂停了</li>
+</ul>
+<p>调用 <code>genFunc</code> 并不会执行它，而是返回一个调用过的 generator 对象供我们控制 <code>genFunc</code> 的执行。</p>
+<p><code>&gt; let genObj = genFunc();</code></p>
+<p><code>genFunc()</code> 一开始会在函数体的开头挂起，<code>genObj.next()</code> 会继续执行 <code>genFunc()</code> 直到遇到下一个 yield 声明。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt; genObj.next()</span><br><span class="line">First</span><br><span class="line">&#123; <span class="attr">value</span>: <span class="literal">undefined</span>, <span class="attr">done</span>: <span class="literal">false</span> &#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到 <code>genObj.next()</code> 返回了一个对象，现在让我们暂时忽略它，等到了将 generators 用作 iterators 的时候再详细讲它。</p>
+<p><code>genFunc</code> 现在在 A 行挂起了，如果我们再次调用 <code>next()</code> ，函数会继续执行到 B 行。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt; genObj.next()</span><br><span class="line">Second</span><br><span class="line">&#123; <span class="attr">value</span>: <span class="literal">undefined</span>, <span class="attr">done</span>: <span class="literal">true</span> &#125;</span><br></pre></td></tr></table></figure>
+<p>现在这个函数已经执行完毕了，再次调用 <code>next()</code> 也不会有任何作用了。</p>
+<h3 id="2-1-创建-Generators-的方法"><a href="#2-1-创建-Generators-的方法" class="headerlink" title="2.1 创建 Generators 的方法"></a>2.1 创建 Generators 的方法</h3><p>你有四种创建 generators 的方法：</p>
+<ol>
+<li><p>Generator 函数声明：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span>* <span class="title">genFunc</span>(<span class="params"></span>) </span>&#123; ··· &#125;</span><br><span class="line"><span class="keyword">let</span> genObj = genFunc();</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Generator 函数表达式：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> genFunc = <span class="function"><span class="keyword">function</span>* (<span class="params"></span>) </span>&#123; ··· &#125;;</span><br><span class="line"><span class="keyword">let</span> genObj = genFunc();</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Generator 对象字面量：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> obj = &#123;</span><br><span class="line">    * generatorMethod() &#123;</span><br><span class="line">        ···</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">let</span> genObj = obj.generatorMethod();</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在类定义中的方法（可以是类的定义，也可以是类表达式）：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span> </span>&#123;</span><br><span class="line">    * generatorMethod() &#123;</span><br><span class="line">        ···</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">let</span> myInst = <span class="keyword">new</span> MyClass();</span><br><span class="line"><span class="keyword">let</span> genObj = myInst.generatorMethod();</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="2-2-Generators-的使用场景"><a href="#2-2-Generators-的使用场景" class="headerlink" title="2.2 Generators 的使用场景"></a>2.2 Generators 的使用场景</h3><p>Generators 有三种使用场景：</p>
+<ol>
+<li>Iterators（生产者）：每一个 yield 都可以通过 <code>next()</code> 返回一个值，也就是说 generators 可以通过循环和递归创建一组连续的值，由于 generator 对象实现了 Iterable 接口，任何支持 iterables 的 ECMAScript 6 结构都可以消费这些数据，举两个例子：for-of 循环和 spread 操作符（<code>...</code>）。</li>
+<li>Observers（消费者）：yield 还可以通过 next 接收参数，generators 可以作为消费者在调用 next 的时候不断地消费数据。</li>
+<li>Coroutines（生产者和消费者）：既然 generators 可以挂起，并且可以同时作为消费者和生产者使用，我们很容易可以将它转化为 coroutines。</li>
+</ol>
+<p>下面我们详细介绍一下这三个场景。</p>
+<h2 id="3-Generators-用作-iterators（生产者）"><a href="#3-Generators-用作-iterators（生产者）" class="headerlink" title="3. Generators 用作 iterators（生产者）"></a>3. Generators 用作 iterators（生产者）</h2><p>这一节我们主要来介绍将 generator 用作生产者，也就是说 generator 函数的返回既是一个 Iterable 也是一个 Iterator。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">interface Iterable &#123;</span><br><span class="line">    [<span class="built_in">Symbol</span>.iterator]() : Iterator;</span><br><span class="line">&#125;</span><br><span class="line">interface Iterator &#123;</span><br><span class="line">    next() : IteratorResult;</span><br><span class="line">    <span class="keyword">return</span>?(value? : any) : IteratorResult;</span><br><span class="line">&#125;</span><br><span class="line">interface IteratorResult &#123;</span><br><span class="line">    value : any;</span><br><span class="line">    done : boolean;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Generator 函数通过 yield 创建了一组值，消费者调用 iterator 的 <code>next()</code> 方法不断的消费这个值，举个例子，下面的 generator 创造了一组值：’a’ 和 ‘b’：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span>* <span class="title">genFunc</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">yield</span> <span class="string">'a'</span>;</span><br><span class="line">    <span class="keyword">yield</span> <span class="string">'b'</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下面的代码展示了如何通过 generator 对象 <code>genObj</code> 来获取 yield 后的值：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="keyword">let</span> genObj = genFunc();</span><br><span class="line">&gt; genObj.next()</span><br><span class="line">&#123; <span class="attr">value</span>: <span class="string">'a'</span>, <span class="attr">done</span>: <span class="literal">false</span> &#125;</span><br><span class="line">&gt; genObj.next()</span><br><span class="line">&#123; <span class="attr">value</span>: <span class="string">'b'</span>, <span class="attr">done</span>: <span class="literal">false</span> &#125;</span><br><span class="line">&gt; genObj.next() <span class="comment">// 循环结束</span></span><br><span class="line">( value: <span class="literal">undefined</span>, <span class="attr">done</span>: <span class="literal">true</span> &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="3-1-如何遍历-generator"><a href="#3-1-如何遍历-generator" class="headerlink" title="3.1 如何遍历 generator"></a>3.1 如何遍历 generator</h3><p>既然 generator 是 iterable 的，ES6 中支持 iterables 的数据结构都可以应用在它下身上，这其中有三个值得我们注意。</p>
+<p>首先是 for-of 循环：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> x <span class="keyword">of</span> genFunc()) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(x);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// Output:</span></span><br><span class="line"><span class="comment">// a</span></span><br><span class="line"><span class="comment">// b</span></span><br></pre></td></tr></table></figure>
+<p>第二个是 spread 操作符（<code>...</code>），它将一组数据转化为数组：</p>
+<p><code>let arr = [...genFunc()]; // [&#39;a&#39;, &#39;b&#39;]</code></p>
+<p>最后是解构（destructuring）：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="keyword">let</span> [x, y] = genFunc();</span><br><span class="line">&gt; x</span><br><span class="line"><span class="string">'a'</span></span><br><span class="line">&gt; y</span><br><span class="line"><span class="string">'b'</span></span><br></pre></td></tr></table></figure>
+<h3 id="3-2-Generator-的返回值"><a href="#3-2-Generator-的返回值" class="headerlink" title="3.2 Generator 的返回值"></a>3.2 Generator 的返回值</h3><p>前面的 generator 函数没有 return，也就是返回值是 undefined，这里我们尝试显式的让 generator 返回一个值：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span>* <span class="title">genFuncWithReturn</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">yield</span> <span class="string">'a'</span>;</span><br><span class="line">    <span class="keyword">yield</span> <span class="string">'b'</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">'result'</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>返回值在 <code>next()</code> 最后一个返回，done 为 true 的对象里：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="keyword">let</span> genObjWithReturn = genFuncWithReturn();</span><br><span class="line">&gt; genObjWithReturn.next()</span><br><span class="line">&#123; <span class="attr">value</span>: <span class="string">'a'</span>, <span class="attr">done</span>: <span class="literal">false</span> &#125;</span><br><span class="line">&gt; genObjWithReturn.next()</span><br><span class="line">&#123; <span class="attr">value</span>: <span class="string">'b'</span>, <span class="attr">done</span>: <span class="literal">false</span> &#125;</span><br><span class="line">&gt; genObjWithReturn.next()</span><br><span class="line">&#123; <span class="attr">value</span>: <span class="string">'result'</span>, <span class="attr">done</span>: <span class="literal">true</span> &#125;</span><br></pre></td></tr></table></figure>
+<p>然而大部分支持 iterables 的数据结构都没有输出 done 为 true 的对象里的值：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> x <span class="keyword">of</span> genFuncWithReturn()) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(x);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// Output:</span></span><br><span class="line"><span class="comment">// a</span></span><br><span class="line"><span class="comment">// b</span></span><br><span class="line">    </span><br><span class="line"><span class="keyword">let</span> arr = [...genFuncWithReturn()]; <span class="comment">// ['a', 'b']</span></span><br></pre></td></tr></table></figure>
+<p>我们稍后会介绍递归操作符 yield*，它会考虑 done 为 true 的对象的值。</p>
+<h3 id="3-3-示例：遍历属性"><a href="#3-3-示例：遍历属性" class="headerlink" title="3.3 示例：遍历属性"></a>3.3 示例：遍历属性</h3><p>接下来我们会写个例子展示用 generators 实现 iterables 有多么方便，下面代码里的 <code>objectEntries()</code> 函数返回一个对象所有属性的的 iterable：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span>* <span class="title">objectEntries</span>(<span class="params">obj</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 在 ES6 中你既可以用字符串，也可以用 Symbol </span></span><br><span class="line">    <span class="comment">// 作为属性的键(key)</span></span><br><span class="line">    <span class="comment">// 使用 Reflect.ownKeys() 则两者都会返回</span></span><br><span class="line">    <span class="keyword">let</span> propKeys = <span class="built_in">Reflect</span>.ownKeys(obj);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> propKey <span class="keyword">of</span> propKeys) &#123;</span><br><span class="line">        <span class="keyword">yield</span> [propKey, obj[propKey]];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的函数让你可以通过 for-of 遍历对象 jane：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> jane = &#123; <span class="attr">first</span>: <span class="string">'Jane'</span>, <span class="attr">last</span>: <span class="string">'Doe'</span> &#125;;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> [key,value] <span class="keyword">of</span> objectEntries(jane)) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`<span class="subst">$&#123;key&#125;</span>: <span class="subst">$&#123;value&#125;</span>`</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// Output:</span></span><br><span class="line"><span class="comment">// first: Jane</span></span><br><span class="line"><span class="comment">// last: Doe</span></span><br></pre></td></tr></table></figure>
+<p>让我们来对比一下不用 generators 实现一个同样功能的 <code>objectEntries()</code> 有多么复杂：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">objectEntries</span>(<span class="params">obj</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">let</span> index = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">let</span> propKeys = <span class="built_in">Reflect</span>.ownKeys(obj);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">        [<span class="built_in">Symbol</span>.iterator]() &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">        &#125;,</span><br><span class="line">        next() &#123;</span><br><span class="line">            <span class="keyword">if</span> (index &lt; propKeys.length) &#123;</span><br><span class="line">                <span class="keyword">let</span> key = propKeys[index];</span><br><span class="line">                index++;</span><br><span class="line">                <span class="keyword">return</span> &#123; <span class="attr">value</span>: [key, obj[key]] &#125;;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> &#123; <span class="attr">done</span>: <span class="literal">true</span> &#125;;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="3-4-通过-yield-实现递归"><a href="#3-4-通过-yield-实现递归" class="headerlink" title="3.4 通过 yield* 实现递归"></a>3.4 通过 yield* 实现递归</h3><p>yield* 操作符可以让你在 generator 里调用另一个 generator，接下来我只会讲解两个 generator 都有输出的情况，稍后我会讲解如果同时有 Input 参与的情况。</p>
+<p>一个 generator 如何递归的调用另一个 generator？现在假设你写了一个 generator 叫做 foo：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span>* <span class="title">foo</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">yield</span> <span class="string">'a'</span>;</span><br><span class="line">    <span class="keyword">yield</span> <span class="string">'b'</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>怎么样才能在 generator bar 中调用 foo？（注意下面的方式是没用的）：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span>* <span class="title">bar</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">yield</span> <span class="string">'x'</span>;</span><br><span class="line">    foo(); <span class="comment">// 什么也没有做！</span></span><br><span class="line">    <span class="keyword">yield</span> <span class="string">'y'</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>调用 <code>foo()</code> 会返回一个对象，但是并不会真正执行 <code>foo()</code>，因此 ECMAScript 6 定义了 <code>yield*</code> 操作符用来递归调用 generator：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span>* <span class="title">bar</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">yield</span> <span class="string">'x'</span>;</span><br><span class="line">    <span class="keyword">yield</span>* foo();</span><br><span class="line">    <span class="keyword">yield</span> <span class="string">'y'</span>;</span><br><span class="line">&#125;</span><br><span class="line">    </span><br><span class="line"><span class="comment">// 将所有 bar 返回的 yield 后的值放到一个数组里</span></span><br><span class="line"><span class="keyword">let</span> arr = [...bar()];</span><br><span class="line">    <span class="comment">// ['x', 'a', 'b', 'y']</span></span><br></pre></td></tr></table></figure>
+<p>yield* 的作用类似下面的代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span>* <span class="title">bar</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">yield</span> <span class="string">'x'</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> value <span class="keyword">of</span> foo()) &#123;</span><br><span class="line">        <span class="keyword">yield</span> value;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">yield</span> <span class="string">'y'</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>yield* 后面的操作符不一定要求非得是 generator，可以是任何 iterable：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span>* <span class="title">bla</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">yield</span> <span class="string">'sequence'</span>;</span><br><span class="line">    <span class="keyword">yield</span>* [<span class="string">'of'</span>, <span class="string">'yielded'</span>];</span><br><span class="line">    <span class="keyword">yield</span> <span class="string">'values'</span>;</span><br><span class="line">&#125;</span><br><span class="line">    </span><br><span class="line"><span class="keyword">let</span> arr = [...bla()];</span><br><span class="line">    <span class="comment">// ['sequence', 'of', 'yielded', 'values']</span></span><br></pre></td></tr></table></figure>
+<p>yield* 会处理 iteration 结束时的值</p>
+<p>大部分支持 iterables 的数据结构会在 iteration 结束时（done 为 true）忽略最后的值，Generators 通过 return 提供这个值：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span>* <span class="title">genFuncWithReturn</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">yield</span> <span class="string">'a'</span>;</span><br><span class="line">    <span class="keyword">yield</span> <span class="string">'b'</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">'The result'</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span>* <span class="title">logReturned</span>(<span class="params">genObj</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">let</span> result = <span class="keyword">yield</span>* genObj;</span><br><span class="line">    <span class="built_in">console</span>.log(result); <span class="comment">// (A)</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下面我们通过 <code>logReturned()</code> 输出所有值：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt; [...logReturned(genFuncWithReturn())]</span><br><span class="line">The result</span><br><span class="line">[ <span class="string">'a'</span>, <span class="string">'b'</span> ]</span><br></pre></td></tr></table></figure>
+<p><strong>遍历树</strong></p>
+<p>通过递归遍历一棵树很容易，但是写一个 iterator 遍历树就很复杂了，使用 generators 可以让你很容易通过递归实现一个 iterator。举个例子，下面的数据结构是一颗二叉树，因为它有一个 Symbol.iterator 方法，所以它是 iterable 的，而且这个方法是个 generator，可以通过调用它获得一个 iterator。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BinaryTree</span> </span>&#123;</span><br><span class="line">    <span class="keyword">constructor</span>(value, left=null, right=null) &#123;</span><br><span class="line">        <span class="keyword">this</span>.value = value;</span><br><span class="line">        <span class="keyword">this</span>.left = left;</span><br><span class="line">        <span class="keyword">this</span>.right = right;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/** Prefix iteration */</span></span><br><span class="line">    * [<span class="built_in">Symbol</span>.iterator]() &#123;</span><br><span class="line">        <span class="keyword">yield</span> <span class="keyword">this</span>.value;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.left) &#123;</span><br><span class="line">            <span class="keyword">yield</span>* <span class="keyword">this</span>.left;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.right) &#123;</span><br><span class="line">            <span class="keyword">yield</span>* <span class="keyword">this</span>.right;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下面的代码创建了一个二叉树并且通过 for-of 遍历它：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> tree = <span class="keyword">new</span> BinaryTree(<span class="string">'a'</span>,</span><br><span class="line">    <span class="keyword">new</span> BinaryTree(<span class="string">'b'</span>,</span><br><span class="line">        <span class="keyword">new</span> BinaryTree(<span class="string">'c'</span>),</span><br><span class="line">        <span class="keyword">new</span> BinaryTree(<span class="string">'d'</span>)),</span><br><span class="line">    <span class="keyword">new</span> BinaryTree(<span class="string">'e'</span>));</span><br><span class="line">    </span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> x <span class="keyword">of</span> tree) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(x);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// Output:</span></span><br><span class="line"><span class="comment">// a</span></span><br><span class="line"><span class="comment">// b</span></span><br><span class="line"><span class="comment">// c</span></span><br><span class="line"><span class="comment">// d</span></span><br><span class="line"><span class="comment">// e</span></span><br></pre></td></tr></table></figure>
+<h3 id="3-5-你只能在-generators-中使用-yield"><a href="#3-5-你只能在-generators-中使用-yield" class="headerlink" title="3.5 你只能在 generators 中使用 yield"></a>3.5 你只能在 generators 中使用 yield</h3><p>Generators 一个最明显的限制就是你只能在 generator 函数里使用 yield，也就是说回调函数里的 yield 并不会起作用：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span>* <span class="title">genFunc</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    [<span class="string">'a'</span>, <span class="string">'b'</span>].forEach(<span class="function"><span class="params">x</span> =&gt;</span> <span class="keyword">yield</span> x); <span class="comment">// SyntaxError</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>yield 不允许出现在一个非 generator 函数中，所以上面的代码报错了。上面这种情况我们可以把它改成非 callback 的模式，但是并不是所有场景都能这么做。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span>* <span class="title">genFunc</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> x <span class="keyword">of</span> [<span class="string">'a'</span>, <span class="string">'b'</span>]) &#123;</span><br><span class="line">        <span class="keyword">yield</span> x; <span class="comment">// OK</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="4-Generators-作为-observers（消费者）"><a href="#4-Generators-作为-observers（消费者）" class="headerlink" title="4. Generators 作为 observers（消费者）"></a>4. Generators 作为 observers（消费者）</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">interface Observer &#123;</span><br><span class="line">    next(value? : any) : <span class="keyword">void</span>;</span><br><span class="line">    <span class="keyword">return</span>(value? : any) : <span class="keyword">void</span>;</span><br><span class="line">    <span class="keyword">throw</span>(error) : <span class="keyword">void</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Generator 作为一个 Observer，在它接收到输入之前都处于暂停状态，输入有三种类型：</p>
+<ul>
+<li><code>next()</code> 发送普通输入</li>
+<li><code>return()</code> 中止 generator</li>
+<li><code>throw()</code> 发出一个 error 信号</li>
+</ul>
+<h3 id="4-1-通过-next-发送数据"><a href="#4-1-通过-next-发送数据" class="headerlink" title="4.1 通过 next 发送数据"></a>4.1 通过 next 发送数据</h3><p>如果你把 generator 当作 observer 用，你通过 <code>next()</code> 向它发送数据，它通过 <code>yield</code> 来接收：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span>* <span class="title">dataConsumer</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'Started'</span>);</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`1. <span class="subst">$&#123;<span class="keyword">yield</span>&#125;</span>`</span>); <span class="comment">// (A)</span></span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`2. <span class="subst">$&#123;<span class="keyword">yield</span>&#125;</span>`</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="string">'result'</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>首先，我们创建一个 generator 对象：</p>
+<p><code>&gt; let genObj = dataConsumer();</code></p>
+<p>现在我们开始调用 <code>genObj.next()</code> 来启动 generator，函数一直执行到第一个 yield 声明，<code>next()</code> 函数的结果就是 A 行（undefined）。我们现在并不关心 <code>next()</code> 的返回，因为目前我们只是在用它发送值而不是接收。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt; genObj.next()</span><br><span class="line">Started</span><br><span class="line">&#123; <span class="attr">value</span>: <span class="literal">undefined</span>, <span class="attr">done</span>: <span class="literal">false</span> &#125;</span><br></pre></td></tr></table></figure>
+<p>现在我们再调用两次 <code>next()</code>，一次传值 ‘a’ 一次传 ‘b’：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&gt; genObj.next(<span class="string">'a'</span>)</span><br><span class="line"><span class="number">1.</span> a</span><br><span class="line">&#123; <span class="attr">value</span>: <span class="literal">undefined</span>, <span class="attr">done</span>: <span class="literal">false</span> &#125;</span><br><span class="line">    </span><br><span class="line">&gt; genObj.next(<span class="string">'b'</span>)</span><br><span class="line"><span class="number">2.</span> b</span><br><span class="line">&#123; <span class="attr">value</span>: <span class="string">'result'</span>, <span class="attr">done</span>: <span class="literal">true</span> &#125;</span><br></pre></td></tr></table></figure>
+<p>最后一个 <code>next()</code> 的值就是 <code>dataConsumer()</code> 的返回值，done 属性为 true 意味着 generator 执行完毕了。</p>
+<p><strong>首次调用 next()</strong></p>
+<p>当我们在把 generator 作为 observer 用的时候，时刻记住：<code>next()</code> 的第一次执行仅仅是为了启动 observer。之后它才可以接收输入，因为首次调用要比 yield 先执行，因此你不能在第一次调用 <code>next()</code> 的时候传参数：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="function"><span class="keyword">function</span>* <span class="title">g</span>(<span class="params"></span>) </span>&#123; <span class="keyword">yield</span> &#125;</span><br><span class="line">&gt; g().next(<span class="string">'hello'</span>)</span><br><span class="line"><span class="built_in">TypeError</span>: attempt to send <span class="string">'hello'</span> to newborn generator</span><br></pre></td></tr></table></figure>
+<p>下面的 utility 函数解决了这个问题：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 返回一个函数</span></span><br><span class="line"><span class="comment"> * 调用这个函数的时候返回调用过 `next()` 的 generator</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">coroutine</span>(<span class="params">generatorFunction</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params">...args</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">let</span> generatorObject = generatorFunction(...args);</span><br><span class="line">        generatorObject.next();</span><br><span class="line">        <span class="keyword">return</span> generatorObject;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下面我们来对比一下 <code>coroutine()</code> 和一个普通的 <code>generator</code></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> wrapped = coroutine(<span class="function"><span class="keyword">function</span>* (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`First input: <span class="subst">$&#123;<span class="keyword">yield</span>&#125;</span>`</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="string">'DONE'</span>;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="keyword">const</span> normal = <span class="function"><span class="keyword">function</span>* (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`First input: <span class="subst">$&#123;<span class="keyword">yield</span>&#125;</span>`</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="string">'DONE'</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>Generator <code>wrapped</code> 可以立刻接收输入：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; wrapped().next(<span class="string">'hello!'</span>)</span><br><span class="line">First input: hello!</span><br></pre></td></tr></table></figure>
+<p>Generator <code>normal</code> 需要执行一次额外的 <code>next()</code> 才能接收输入：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="keyword">let</span> genObj = normal();</span><br><span class="line">&gt; genObj.next()</span><br><span class="line">&#123; <span class="attr">value</span>: <span class="literal">undefined</span>, <span class="attr">done</span>: <span class="literal">false</span> &#125;</span><br><span class="line">&gt; genObj.next(<span class="string">'hello!'</span>)</span><br><span class="line">First input: hello!</span><br><span class="line">&#123; <span class="attr">value</span>: <span class="string">'DONE'</span>, <span class="attr">done</span>: <span class="literal">true</span> &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="4-2-yield-绑定很松散"><a href="#4-2-yield-绑定很松散" class="headerlink" title="4.2 yield 绑定很松散"></a>4.2 yield 绑定很松散</h3><p>yield 绑定十分松散，所以我们不需要把操作符放到括号里：</p>
+<p><code>yield a + b + c;</code></p>
+<p>等价于：</p>
+<p><code>yield (a + b + c);</code></p>
+<p>而不是：</p>
+<p><code>(yield a) + b + c;</code></p>
+<p>很多操作符比 yield 绑定更紧凑，当你把 yield 作为操作符使用时，你需要把它放在括号中，举个例子，下面的代码没有把 yield 放在括号里所以导致了 SyntaxError：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="string">'Hello'</span> + <span class="keyword">yield</span>); <span class="comment">// SyntaxError</span></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'Hello'</span> + <span class="keyword">yield</span> <span class="number">123</span>); <span class="comment">// SyntaxError</span></span><br><span class="line">    </span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'Hello'</span> + (<span class="keyword">yield</span>)); <span class="comment">// OK</span></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'Hello'</span> + (<span class="keyword">yield</span> <span class="number">123</span>)); <span class="comment">// OK</span></span><br></pre></td></tr></table></figure>
+<p>当 yield 是参数时不需要括号：</p>
+<p><code>foo(yield &#39;a&#39;, yield ‘b’);</code></p>
+<p>当 yield 是一个右值时也不需要括号：</p>
+<p><code>let input = yield;</code></p>
+
+
+                <hr>
+
+                
+
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/2017/01/12/custom-event/" data-toggle="tooltip" data-placement="top" title="Javascript 自定义事件">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/2017/01/07/javascript-decorator/" data-toggle="tooltip" data-placement="top" title="「译」探索 ECMAScript Decorators">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="https://yemengying.com" target="_blank">Giraffe&#39;s Home</a></li>
+                    
+                </ul>
+                
+            </div>
+
+        </div>
+    </div>
+</article>
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "klamtine";
+    var disqus_identifier = "https://shijianan.com/2017/01/08/javascript-generator/";
+    var disqus_url = "https://shijianan.com/2017/01/08/javascript-generator/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                    <li>
+                        <a target="_blank" href="https://twitter.com/jiananshi">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+                
+
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank" href="https://github.com/jiananshi">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; 小森林 2019 
+                    <br>
+                    Theme by <a href="http://huangxuan.me">Hux</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    Ported by <a href="http://blog.kaijun.rocks">Kaijun</a> | 
+                    <iframe style="margin-left: 2px; margin-bottom:-5px;" frameborder="0" scrolling="0" width="91px" height="20px" src="https://ghbtns.com/github-btn.html?user=kaijun&repo=hexo-theme-huxblog&type=star&count=true">
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://shijianan.com/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-134767726-1';
+    var _gaDomain = 'shijianan.com';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- Side Catalog -->
+
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="https://shijianan.com/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>
