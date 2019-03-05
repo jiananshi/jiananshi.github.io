@@ -90,13 +90,6 @@
 
                         
                         <li>
-                            <a href="/about/">About</a>
-                        </li>
-                        
-                    
-
-                        
-                        <li>
                             <a href="/archives/">Archives</a>
                         </li>
                         
@@ -105,6 +98,13 @@
                         
                         <li>
                             <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
                         </li>
                         
                     
@@ -206,8 +206,8 @@
 <p>可以看到 onClick 事件依然在每次实例化时被定义到了实例上，函数创建过多导致性能问题是不成立的，从「减少函数创建次数」这个角度我们想要进行优化，只要将函数的 this 绑定到基类上即可，我们可以借助 bind 完成这件事：</p>
 <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> React <span class="keyword">from</span> <span class="string">'react'</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">App</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">Component</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>() &#123;</span><br><span class="line">    <span class="keyword">super</span>();</span><br><span class="line">    <span class="keyword">this</span>.onClick = <span class="keyword">this</span>.onClick.bind(<span class="keyword">this</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  onClick() &#123; alert(<span class="string">'Clicked'</span>); &#125;</span><br><span class="line">  render() &#123;</span><br><span class="line">    <span class="keyword">return</span> (    </span><br><span class="line">    &lt;button onClick=&#123;<span class="keyword">this</span>.onClick&#125;&gt;点击&lt;<span class="regexp">/button&gt;</span></span><br><span class="line"><span class="regexp">    );</span></span><br><span class="line"><span class="regexp">  &#125;</span></span><br><span class="line"><span class="regexp">&#125;;</span></span><br><span class="line"><span class="regexp"></span></span><br><span class="line"><span class="regexp">render(&lt;App /</span>&gt;, <span class="built_in">document</span>.querySelector(<span class="string">'#app'</span>));</span><br></pre></td></tr></table></figure>
 <p>盗了 <a href="[Demystifying Memory Usage using ES6 React Classes – DailyJS – Mediumhttps://medium.com/dailyjs/demystifying-memory-usage-using-es6-react-classes-d9d904bc4557">dailyjs</a> 上两张图表示这种方式是如何节省内存的（虚线框代表从父类继承的方法，实线框代表占用内存的部分）：</p>
-<p><img src="https://oiw32lugp.qnssl.com/1.png" alt="1"></p>
-<p><img src="https://oiw32lugp.qnssl.com/2.png" alt="2"></p>
+<p><img src="//pic.yupoo.com/jiananshi/8c2db9bc/16b5908c.png" alt="1"></p>
+<p><img src="//pic.yupoo.com/jiananshi/0f49b19d/45f41c33.png" alt="2"></p>
 <p>每次都要在初始化的时候写一坨 <code>bind</code> 确实很恶心，可以参考 autobind 这个 decorator 用 babel 转一波 ，在 React 中绑定一个事件处理函数的终极方案是：</p>
 <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> React <span class="keyword">from</span> <span class="string">'react'</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">App</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">Component</span> </span>&#123;</span><br><span class="line">  @autobind</span><br><span class="line">  onClick() &#123; alert(<span class="string">'Clicked'</span>); &#125;</span><br><span class="line"></span><br><span class="line">  render() &#123;</span><br><span class="line">    <span class="keyword">return</span> (    </span><br><span class="line">    &lt;button onClick=&#123;<span class="keyword">this</span>.onClick&#125;&gt;点击&lt;<span class="regexp">/button&gt;</span></span><br><span class="line"><span class="regexp">    );</span></span><br><span class="line"><span class="regexp">  &#125;</span></span><br><span class="line"><span class="regexp">&#125;;</span></span><br><span class="line"><span class="regexp"></span></span><br><span class="line"><span class="regexp">render(&lt;App /</span>&gt;, <span class="built_in">document</span>.querySelector(<span class="string">'#app'</span>));</span><br></pre></td></tr></table></figure>
 <p>最后，匿名函数在某些场景下确实会导致性能问题，就是当配合 PureComponent 使用时，在 Prop diff 的时候做 shallowEqual 的结果总会是 false，因此即使 state/props 没有变动也会进入后面的阶段。</p>
