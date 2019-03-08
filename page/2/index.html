@@ -90,6 +90,13 @@
 
                         
                         <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
                             <a href="/archives/">Archives</a>
                         </li>
                         
@@ -98,13 +105,6 @@
                         
                         <li>
                             <a href="/tags/">Tags</a>
-                        </li>
-                        
-                    
-
-                        
-                        <li>
-                            <a href="/about/">About</a>
                         </li>
                         
                     
@@ -185,6 +185,28 @@
 
                 <!-- Main Content -->
 
+
+<div class="post-preview">
+
+    <a href="/2017/07/01/http-xff/">
+        <h2 class="post-title">
+            HTTP 头 X-FORWARDED-FOR
+        </h2>
+        <h3 class="post-subtitle">
+            
+        </h3>
+        <div class="post-content-preview">
+            Disqus 被墙以后配置了一个反向代理去调 Disqus api，那个服务到现在运行的还不错，美中不足的是经过了一层反向代理后我们丢掉了用户的 IP 信息，最终提交给 Disqus 的只有转发服务器的 IP，这样所有用户的请求都来自于同一个 IP，假如要展示访客地区分布就捉🐔了。
+反向代理对于用户来说是透明的，客户端并不知道这个接口后面有几层代理，而最后一层代理甚至有可能不知道真实用户的......
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by jiananshi on
+        2017-07-01
+    </p>
+
+</div>
+<hr>
 
 <div class="post-preview">
 
@@ -397,29 +419,6 @@ Session Cac......
 </div>
 <hr>
 
-<div class="post-preview">
-
-    <a href="/2017/04/02/javascript-passing-arguments/">
-        <h2 class="post-title">
-            JS 中参数的传递方式
-        </h2>
-        <h3 class="post-subtitle">
-            
-        </h3>
-        <div class="post-content-preview">
-            提到 Javascript 参数的传递方式，大部分稍微有点经验的人都能说出有按值和按引用传递，基础类型数据按值传递，Object 按引用传递，比如下面的代码：
-1234567function parse(raw) &#123;  raw = 10;&#125;var num = 5;parse(num);num // 5
-由于基础类型按值传递，所以函数 parse 并不会改变外面的 num ......
-        </div>
-    </a>
-    <p class="post-meta">
-        Posted by jiananshi on
-        2017-04-02
-    </p>
-
-</div>
-<hr>
-
 
 
 <!-- Pager -->
@@ -479,17 +478,13 @@ Session Cac......
                             
                         
                             
+                            <a href="/tags/#http" title="http" rel="4">http</a>
+                            
+                        
+                            
                         
                             
                             <a href="/tags/#https" title="https" rel="4">https</a>
-                            
-                        
-                            
-                        
-                            
-                            <a href="/tags/#http" title="http" rel="3">http</a>
-                            
-                        
                             
                         
                             
@@ -512,6 +507,10 @@ Session Cac......
                         
                             
                             <a href="/tags/#nginx" title="nginx" rel="2">nginx</a>
+                            
+                        
+                            
+                        
                             
                         
                             

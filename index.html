@@ -90,6 +90,13 @@
 
                         
                         <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
                             <a href="/archives/">Archives</a>
                         </li>
                         
@@ -98,13 +105,6 @@
                         
                         <li>
                             <a href="/tags/">Tags</a>
-                        </li>
-                        
-                    
-
-                        
-                        <li>
-                            <a href="/about/">About</a>
                         </li>
                         
                     
@@ -185,6 +185,30 @@
 
                 <!-- Main Content -->
 
+
+<div class="post-preview">
+
+    <a href="/2019/03/08/http-cache/">
+        <h2 class="post-title">
+            HTTP 缓存
+        </h2>
+        <h3 class="post-subtitle">
+            
+        </h3>
+        <div class="post-content-preview">
+            ETag、cache-control、expires… 涉及到缓存的 HTTP Header 有这么多用的时候很容易混淆，本篇文章就写一下不同的缓存头是如何工作的。
+网上很多文章将缓存分为「强缓存」和「协商缓存」，原始出处不知道是哪里，在 w3c 草案 中有这样一段描述：
+
+…在 HTTP 1.1 中，缓存的目标是在大部分情况下尽量不发送请求，在其他情况下尽量不发送全部的响应，前者减少了网络......
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by jiananshi on
+        2019-03-08
+    </p>
+
+</div>
+<hr>
 
 <div class="post-preview">
 
@@ -390,28 +414,6 @@ XSS 最主要的方式是通过服务端没有对用户上传的内容进行 编
 </div>
 <hr>
 
-<div class="post-preview">
-
-    <a href="/2017/07/01/http-xff/">
-        <h2 class="post-title">
-            HTTP 头 X-FORWARDED-FOR
-        </h2>
-        <h3 class="post-subtitle">
-            
-        </h3>
-        <div class="post-content-preview">
-            Disqus 被墙以后配置了一个反向代理去调 Disqus api，那个服务到现在运行的还不错，美中不足的是经过了一层反向代理后我们丢掉了用户的 IP 信息，最终提交给 Disqus 的只有转发服务器的 IP，这样所有用户的请求都来自于同一个 IP，假如要展示访客地区分布就捉🐔了。
-反向代理对于用户来说是透明的，客户端并不知道这个接口后面有几层代理，而最后一层代理甚至有可能不知道真实用户的......
-        </div>
-    </a>
-    <p class="post-meta">
-        Posted by jiananshi on
-        2017-07-01
-    </p>
-
-</div>
-<hr>
-
 
 
 <!-- Pager -->
@@ -467,17 +469,13 @@ XSS 最主要的方式是通过服务端没有对用户上传的内容进行 编
                             
                         
                             
+                            <a href="/tags/#http" title="http" rel="4">http</a>
+                            
+                        
+                            
                         
                             
                             <a href="/tags/#https" title="https" rel="4">https</a>
-                            
-                        
-                            
-                        
-                            
-                            <a href="/tags/#http" title="http" rel="3">http</a>
-                            
-                        
                             
                         
                             
@@ -500,6 +498,10 @@ XSS 最主要的方式是通过服务端没有对用户上传的内容进行 编
                         
                             
                             <a href="/tags/#nginx" title="nginx" rel="2">nginx</a>
+                            
+                        
+                            
+                        
                             
                         
                             

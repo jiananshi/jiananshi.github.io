@@ -13,11 +13,11 @@
 
     <title>
         
-          HSTS 是什么 - jiananshi
+          HTTP 缓存 - jiananshi
         
     </title>
 
-    <link rel="canonical" href="https://shijianan.com/2017/06/16/hsts/">
+    <link rel="canonical" href="https://shijianan.com/2019/03/08/http-cache/">
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -168,16 +168,14 @@
                 <div class="post-heading">
                     <div class="tags">
                         
-                          <a class="tag" href="/tags/#https" title="https">https</a>
-                        
-                          <a class="tag" href="/tags/#hsts" title="hsts">hsts</a>
+                          <a class="tag" href="/tags/#http" title="http">http</a>
                         
                     </div>
-                    <h1>HSTS 是什么</h1>
+                    <h1>HTTP 缓存</h1>
                     <h2 class="subheading"></h2>
                     <span class="meta">
                         Posted by jiananshi on
-                        2017-06-16
+                        2019-03-08
                     </span>
                 </div>
             </div>
@@ -196,17 +194,20 @@
                 col-md-10 col-md-offset-1
                 post-container">
 
-                <p>网站开启 HTTPS 之后，通常我们希望将 80 端口通过 HTTP 协议访问的流量也导到 HTTPS 443 端口，自此在服务或站点上就不用为劫持和中间人费心了。</p>
-<p>要做到这点很简单，在服务器上将 80 端口的请求 302 到 443 端口即可：</p>
-<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">server</span> &#123;</span><br><span class="line">    <span class="attribute">listen</span> <span class="number">80</span>;</span><br><span class="line">    <span class="attribute">server_name</span> shijianan.com www.shijianan.com;</span><br><span class="line">    <span class="attribute">return</span> <span class="number">302</span> https://<span class="variable">$host</span><span class="variable">$request_uri</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">    <span class="attribute">listen</span> <span class="number">443</span> ssl;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>然而这个方案有两个弊端：一是性能上的略微损耗，第一次为 HTTP 请求建立的 TCP 三次握手是没有意义的，二是通过 HTTP 访问的用户依然有可能被劫持，这可能会造成某些用户永久性无法访问你的站点。</p>
-<p>HSTS 就是为了解决这个问题诞生的<a href="https://tools.ietf.org/html/rfc6797" target="_blank" rel="noopener">RFC 6797 - HTTP Strict Transport Security (HSTS)</a>，当用户通过 HTTP 访问支持 HSTS 的站点时，浏览器内部就会将这个请求重定向到 HTTPS</p>
-<p><img src="http://oiw32lugp.qnssl.com/2017-06-15-232131.jpg" alt="redirect"></p>
-<p>为了让站点支持 HSTS，我们首先需要为所有响应添加一个响应头，格式如下：<code>Strict-Transport-Security: max-age=expireTime [; includeSubDomains] [; preload]</code></p>
-<p>HSTS 生效后发往站点的 HTTP 请求就会被 307 到 HTTPS，但是前提是 HSTS 生效，因此如果用户首次是通过 HTTP 访问这个站点，它依然不会被浏览器内部重定向，这时就需要用到 <strong>HSTS Preload List</strong></p>
-<p>HSTS Preload List 是浏览器内置的一份名单，这个名单中的域名即使通过 HTTP 访问，依然会被浏览器内部重定向到 HTTPS，目前这个名单 Chrome、Firefox、Safari、IE 11 和 Microsoft Edge 都在使用，个人站长也可以前往 <a href="https://hstspreload.org/" target="_blank" rel="noopener">https://hstspreload.org/</a> 检查自己的站点是否符合要求并提交申请添加进列表。需要注意的是，一旦站点上了 HSTS，就不能撤销了，用户总是会通过 HTTPS 来访问你的站点，这一点我觉得技术是不可能倒退的，因此这个站已经提交申请并处于 pending 列表中了。</p>
-<p>最后附一份 nginx 的 HSTS 配置：</p>
-<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">server</span> &#123;</span><br><span class="line">    <span class="attribute">add_header</span> Strict-Transport-Security <span class="string">"max-age=31536000; includeSubDomains; preload"</span> always;</span><br><span class="line"></span><br><span class="line">    <span class="attribute">location</span> / &#123;</span><br><span class="line">      // 如果 location block 中有 add_header 是不会继承 server 中的 add_header</span><br><span class="line">      <span class="attribute">add_header</span> Access-Control-Allow-Origin *;</span><br><span class="line">      <span class="attribute">add_header</span> Strict-Transport-Security <span class="string">"max-age=31536000; includeSubDomains; preload"</span> always;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+                <p>ETag、cache-control、expires… 涉及到缓存的 HTTP Header 有这么多用的时候很容易混淆，本篇文章就写一下不同的缓存头是如何工作的。</p>
+<p>网上很多文章将缓存分为「强缓存」和「协商缓存」，原始出处不知道是哪里，在 <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html" target="_blank" rel="noopener">w3c 草案</a> 中有这样一段描述：</p>
+<blockquote>
+<p>…在 HTTP 1.1 中，缓存的目标是在大部分情况下尽量不发送请求，在其他情况下尽量不发送全部的响应，前者减少了网络请求，我们用「过期」机制来实现这个目的；后者节省了带宽，我们用「验证」机制来实现这个目的。</p>
+</blockquote>
+<p>理解了这段话后面的内容就很好懂了，下面我们继续一一浏览 HTTP 缓存头</p>
+<h2 id="1-Expires-和-Pragma"><a href="#1-Expires-和-Pragma" class="headerlink" title="1. Expires 和 Pragma"></a>1. Expires 和 Pragma</h2><p>首先把 expires 和 pragma 这两个头单独拎出来的原因是他们属于 http1.0 的产物，虽然由于自身局限性目前应用较少但是考虑到 1.1 的协议要向后兼容了解一下还是有必要的。</p>
+<p>Expires 的值是一个具体的日期，意思是在这个日期前资源都可以被认为是有效的，因为需要要求服务端和客户端时间一致才能高效的工作所以现在基本都在用 cache-control 中的 max-age 来按相对时间做了（cache-control 这个头后面马上会讲）；Pragma 的值只有 <code>no-cache</code>，意思并不是字面的不要用缓存的意思，而是在使用缓存前必须同服务器验证有效性，其实跟 <code>cache-control: no-cache</code> 一样的所以现在基本也不用了。</p>
+<h2 id="2-Cache-Control"><a href="#2-Cache-Control" class="headerlink" title="2. Cache-Control"></a>2. Cache-Control</h2><p>Cache-Control 是一个功能很多的头，这里我们先只挑最常用的 <code>max-age</code>、<code>no-cache</code> 和 <code>no-store</code> 介绍。相对于 expires 使用绝对日期，max-age 使用的是相对日期（单位为秒），这样就避免了服务器同客户端时间不同步的问题，比如我们为 max-age 设定为 <code>cache-control: max-age=86400</code>，客户端在一天之内请求这个文件都无需从服务器获得。</p>
+<p>凡事有例外，由于 max-age 的精度太大了，如果在 1 秒内我们的文件出现了变更而 max-age 又还没到过期时间，如何使得客户端及时得到更新呢？这里就涉及到了文章最开始提到的「验证」这个机制，<code>cache-control: no-cache</code> 要求缓存在返回资源前必须同服务器验证资源是否过期，因此无论是 expires 还是 max-age 即使在有效期内也必须向服务器发送请求验证资源有效性。而 no-store 的功能是彻底禁用缓存，也就是跳过「过期」和「验证」的机制，每次都像服务器发起请求获得完整的资源。</p>
+<h2 id="3-Last-Modified-和-If-Modified-Since"><a href="#3-Last-Modified-和-If-Modified-Since" class="headerlink" title="3. Last-Modified 和 If-Modified-Since"></a>3. Last-Modified 和 If-Modified-Since</h2><p>上一节提到了在 <code>cache-control: no-cache</code> 的时候缓存必须同服务器验证资源有效性，那这个资源是否有效是如何验证的呢？方法之一就是通过 <code>last-modified</code> 指定一个具体的日期（这一点同 expires 一样），客户端首次请求后会记录下来这个日期，下一次发起同样的请求的时候会自动加上一个 <code>if-modified-since</code> 头（值自然就是这个日期）给服务端，因为日期是服务端生成的，所以这里也不涉及到日期同步的问题，如果值相同服务端只需返回 304 的状态码允许从缓存返回指定资源即可，无需在 body 中返回具体资源。</p>
+<h2 id="4-ETag-和-If-None-Match"><a href="#4-ETag-和-If-None-Match" class="headerlink" title="4. ETag 和 If-None-Match"></a>4. ETag 和 If-None-Match</h2><p>Last-modified 同 max-age 一样，只能精确到秒，前文提到的在 1 秒内更新文件的问题还是无法得到完美的解决，这里就是使用 etag 的时候了。ETag 由服务端生成，通常是根据文件内容或文件名等唯一字段做一个 hash 然后返回给客户端，客户端在「验证」阶段会自动加一个 <code>if-none-match</code> 头（值自然就是 etag），同 last-modified 一样服务端在验证 etag 值匹配后返回 304 即可，相较于 <code>last-modified</code>，etag 可以实现精度更高的对比。</p>
+<p>最后专门建了个仓库来实验文中提到的内容：<a href="https://github.com/jiananshi/sample-http-cache" target="_blank" rel="noopener">https://github.com/jiananshi/sample-http-cache</a></p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p><a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html" target="_blank" rel="noopener">HTTP/1.1: Caching in HTTP</a><br><a href="https://www.keycdn.com/blog/http-cache-headers" target="_blank" rel="noopener">HTTP Cache Headers - A Complete Guide</a></p>
 
 
                 <hr>
@@ -215,13 +216,9 @@
 
                 <ul class="pager">
                     
-                        <li class="previous">
-                            <a href="/2017/06/18/nginx-https-better/" data-toggle="tooltip" data-placement="top" title="Nginx HTTPS 性能调优">&larr; Previous Post</a>
-                        </li>
-                    
                     
                         <li class="next">
-                            <a href="/2017/06/11/https/" data-toggle="tooltip" data-placement="top" title="HTTPS 证书原理">Next Post &rarr;</a>
+                            <a href="/2019/03/05/what-is-event-loop/" data-toggle="tooltip" data-placement="top" title="Event loop 是什么">Next Post &rarr;</a>
                         </li>
                     
                 </ul>
@@ -254,9 +251,7 @@
                     <h5><a href="/tags/">FEATURED TAGS</a></h5>
                     <div class="tags">
                        
-                          <a class="tag" href="/tags/#https" title="https">https</a>
-                        
-                          <a class="tag" href="/tags/#hsts" title="hsts">hsts</a>
+                          <a class="tag" href="/tags/#http" title="http">http</a>
                         
                     </div>
                 </section>
@@ -286,8 +281,8 @@
 <script type="text/javascript">
     /* * * CONFIGURATION VARIABLES * * */
     var disqus_shortname = "klamtine";
-    var disqus_identifier = "https://shijianan.com/2017/06/16/hsts/";
-    var disqus_url = "https://shijianan.com/2017/06/16/hsts/";
+    var disqus_identifier = "https://shijianan.com/2019/03/08/http-cache/";
+    var disqus_url = "https://shijianan.com/2019/03/08/http-cache/";
 
     (function() {
         var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;

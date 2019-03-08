@@ -13,11 +13,11 @@
 
     <title>
         
-          HSTS 是什么 - jiananshi
+          jiananshi
         
     </title>
 
-    <link rel="canonical" href="https://shijianan.com/2017/06/16/hsts/">
+    <link rel="canonical" href="https://shijianan.com/page/6/">
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -148,119 +148,234 @@
 
 
     <!-- Main Content -->
-    
-<!-- Image to hack wechat -->
-<!-- <img src="https://shijianan.com/img/icon_wechat.png" width="0" height="0"> -->
-<!-- <img src="{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}" width="0" height="0"> -->
+    <!-- Page Header -->
 
-<!-- Post Header -->
-<style type="text/css">
-    header.intro-header{
-        
-            background-image: url('///pic.yupoo.com/jiananshi/7f720625/9c9c26ad.jpg')
-        
-    }
-</style>
-<header class="intro-header">
+    <header class="intro-header" style="background-image: url('///pic.yupoo.com/jiananshi/7f720625/9c9c26ad.jpg')">
+
     <div class="container">
+        <h1></h1>
         <div class="row">
-            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-                <div class="post-heading">
-                    <div class="tags">
-                        
-                          <a class="tag" href="/tags/#https" title="https">https</a>
-                        
-                          <a class="tag" href="/tags/#hsts" title="hsts">hsts</a>
-                        
-                    </div>
-                    <h1>HSTS 是什么</h1>
-                    <h2 class="subheading"></h2>
-                    <span class="meta">
-                        Posted by jiananshi on
-                        2017-06-16
-                    </span>
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 ">
+                <div class="site-heading">
+                    <h1>小森林</h1>
+                    <!--<hr class="small">-->
+                    <span class="subheading"></span>
                 </div>
             </div>
         </div>
     </div>
 </header>
 
-<!-- Post Content -->
-<article>
-    <div class="container">
-        <div class="row">
 
+
+<!-- Main Content -->
+<div class="container">
+    <div class="row">
+        
+
+<!-- USE SIDEBAR -->
     <!-- Post Container -->
             <div class="
-                col-lg-8 col-lg-offset-2
-                col-md-10 col-md-offset-1
-                post-container">
+                col-lg-8 col-lg-offset-1
+                col-md-8 col-md-offset-1
+                col-sm-12
+                col-xs-12
+                post-container
+            ">
 
-                <p>网站开启 HTTPS 之后，通常我们希望将 80 端口通过 HTTP 协议访问的流量也导到 HTTPS 443 端口，自此在服务或站点上就不用为劫持和中间人费心了。</p>
-<p>要做到这点很简单，在服务器上将 80 端口的请求 302 到 443 端口即可：</p>
-<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">server</span> &#123;</span><br><span class="line">    <span class="attribute">listen</span> <span class="number">80</span>;</span><br><span class="line">    <span class="attribute">server_name</span> shijianan.com www.shijianan.com;</span><br><span class="line">    <span class="attribute">return</span> <span class="number">302</span> https://<span class="variable">$host</span><span class="variable">$request_uri</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">    <span class="attribute">listen</span> <span class="number">443</span> ssl;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>然而这个方案有两个弊端：一是性能上的略微损耗，第一次为 HTTP 请求建立的 TCP 三次握手是没有意义的，二是通过 HTTP 访问的用户依然有可能被劫持，这可能会造成某些用户永久性无法访问你的站点。</p>
-<p>HSTS 就是为了解决这个问题诞生的<a href="https://tools.ietf.org/html/rfc6797" target="_blank" rel="noopener">RFC 6797 - HTTP Strict Transport Security (HSTS)</a>，当用户通过 HTTP 访问支持 HSTS 的站点时，浏览器内部就会将这个请求重定向到 HTTPS</p>
-<p><img src="http://oiw32lugp.qnssl.com/2017-06-15-232131.jpg" alt="redirect"></p>
-<p>为了让站点支持 HSTS，我们首先需要为所有响应添加一个响应头，格式如下：<code>Strict-Transport-Security: max-age=expireTime [; includeSubDomains] [; preload]</code></p>
-<p>HSTS 生效后发往站点的 HTTP 请求就会被 307 到 HTTPS，但是前提是 HSTS 生效，因此如果用户首次是通过 HTTP 访问这个站点，它依然不会被浏览器内部重定向，这时就需要用到 <strong>HSTS Preload List</strong></p>
-<p>HSTS Preload List 是浏览器内置的一份名单，这个名单中的域名即使通过 HTTP 访问，依然会被浏览器内部重定向到 HTTPS，目前这个名单 Chrome、Firefox、Safari、IE 11 和 Microsoft Edge 都在使用，个人站长也可以前往 <a href="https://hstspreload.org/" target="_blank" rel="noopener">https://hstspreload.org/</a> 检查自己的站点是否符合要求并提交申请添加进列表。需要注意的是，一旦站点上了 HSTS，就不能撤销了，用户总是会通过 HTTPS 来访问你的站点，这一点我觉得技术是不可能倒退的，因此这个站已经提交申请并处于 pending 列表中了。</p>
-<p>最后附一份 nginx 的 HSTS 配置：</p>
-<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">server</span> &#123;</span><br><span class="line">    <span class="attribute">add_header</span> Strict-Transport-Security <span class="string">"max-age=31536000; includeSubDomains; preload"</span> always;</span><br><span class="line"></span><br><span class="line">    <span class="attribute">location</span> / &#123;</span><br><span class="line">      // 如果 location block 中有 add_header 是不会继承 server 中的 add_header</span><br><span class="line">      <span class="attribute">add_header</span> Access-Control-Allow-Origin *;</span><br><span class="line">      <span class="attribute">add_header</span> Strict-Transport-Security <span class="string">"max-age=31536000; includeSubDomains; preload"</span> always;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+                <!-- Main Content -->
 
 
-                <hr>
+<div class="post-preview">
 
-                
+    <a href="/2015/07/26/lexical-scope/">
+        <h2 class="post-title">
+            Javascript 词法作用域
+        </h2>
+        <h3 class="post-subtitle">
+            
+        </h3>
+        <div class="post-content-preview">
+            前阵子买了中文版《你不知道的 Javascript》，一直听说是好书，之前只是默默 start 了一下，买了读了发现确实是好书。前端可以学习的东西太多辣，决定以后在 todo 上都记下来。
+在 JS 脚本运行时，曾经我单纯的以为只是浏览器内有一个 Javascrpt 引擎，所有东西都交给它就可以了，看了书以后才明白还有编译器和作用域这些模块来辅助代码的编译和执行。有人可能会问，Javascr......
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by jiananshi on
+        2015-07-26
+    </p>
 
-                <ul class="pager">
-                    
-                        <li class="previous">
-                            <a href="/2017/06/18/nginx-https-better/" data-toggle="tooltip" data-placement="top" title="Nginx HTTPS 性能调优">&larr; Previous Post</a>
-                        </li>
-                    
-                    
-                        <li class="next">
-                            <a href="/2017/06/11/https/" data-toggle="tooltip" data-placement="top" title="HTTPS 证书原理">Next Post &rarr;</a>
-                        </li>
-                    
-                </ul>
+</div>
+<hr>
 
-                
 
-                
-                <!-- disqus 评论框 start -->
-                <div class="comment">
-                    <div id="disqus_thread" class="disqus-thread"></div>
-                </div>
-                <!-- disqus 评论框 end -->
+
+<!-- Pager -->
+
+<ul class="pager">
+    
+        <li class="previous">
+            <a href="/page/5/">&larr; Newer Posts</a>
+        </li>
+    
+    
+</ul>
+
+
+
+                <!-- 如果开启评论功能 -->
                 
 
             </div>
-    <!-- Side Catalog Container -->
-        
-
     <!-- Sidebar Container -->
-
             <div class="
-                col-lg-8 col-lg-offset-2
-                col-md-10 col-md-offset-1
-                sidebar-container">
-
+                col-lg-3 col-lg-offset-0
+                col-md-3 col-md-offset-0
+                col-sm-12
+                col-xs-12
+                sidebar-container
+            ">
                 <!-- Featured Tags -->
                 
                 <section>
                     <!-- no hr -->
                     <h5><a href="/tags/">FEATURED TAGS</a></h5>
                     <div class="tags">
-                       
-                          <a class="tag" href="/tags/#https" title="https">https</a>
                         
-                          <a class="tag" href="/tags/#hsts" title="hsts">hsts</a>
+                            
+                        
+                            
+                            <a href="/tags/#javascript" title="javascript" rel="7">javascript</a>
+                            
+                        
+                            
+                        
+                            
+                            <a href="/tags/#security" title="security" rel="3">security</a>
+                            
+                        
+                            
+                        
+                            
+                            <a href="/tags/#css" title="css" rel="3">css</a>
+                            
+                        
+                            
+                        
+                            
+                            <a href="/tags/#http" title="http" rel="4">http</a>
+                            
+                        
+                            
+                        
+                            
+                            <a href="/tags/#https" title="https" rel="4">https</a>
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                            <a href="/tags/#nginx" title="nginx" rel="2">nginx</a>
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
                         
                     </div>
                 </section>
                 
+
+                <!-- Short About -->
+                <section class="visible-md visible-lg">
+                    <hr><h5><a href="/about/">ABOUT ME</a></h5>
+                    <div class="short-about">
+
+                        
+                            <img src="/img/avatar.jpg">
+                        
+
+                        
+
+                        <!-- SNS Link -->
+                        <ul class="list-inline">
+                            
+                            
+                                <li>
+                                    <a target="_blank" href="https://twitter.com/jiananshi">
+                                        <span class="fa-stack fa-lg">
+                                            <i class="fa fa-circle fa-stack-2x"></i>
+                                            <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                        </span>
+                                    </a>
+                                </li>
+                            
+                            
+
+                            
+
+                            
+
+                            
+                                <li>
+                                    <a target="_blank" href="https://github.com/jiananshi">
+                                        <span class="fa-stack fa-lg">
+                                            <i class="fa fa-circle fa-stack-2x"></i>
+                                            <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                        </span>
+                                    </a>
+                                </li>
+                            
+
+
+                            
+                        </ul>
+                    </div>
+                </section>
 
                 <!-- Friends Blog -->
                 
@@ -274,66 +389,9 @@
                 </ul>
                 
             </div>
-
-        </div>
+        
     </div>
-</article>
-
-
-
-
-<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
-<script type="text/javascript">
-    /* * * CONFIGURATION VARIABLES * * */
-    var disqus_shortname = "klamtine";
-    var disqus_identifier = "https://shijianan.com/2017/06/16/hsts/";
-    var disqus_url = "https://shijianan.com/2017/06/16/hsts/";
-
-    (function() {
-        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-    })();
-</script>
-<!-- disqus 公共JS代码 end -->
-
-
-
-
-<!-- async load function -->
-<script>
-    function async(u, c) {
-      var d = document, t = 'script',
-          o = d.createElement(t),
-          s = d.getElementsByTagName(t)[0];
-      o.src = u;
-      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
-      s.parentNode.insertBefore(o, s);
-    }
-</script>
-<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
-<script>
-    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
-        anchors.options = {
-          visible: 'always',
-          placement: 'right',
-          icon: '#'
-        };
-        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
-    })
-</script>
-<style>
-    /* place left on bigger screen */
-    @media all and (min-width: 800px) {
-        .anchorjs-link{
-            position: absolute;
-            left: -0.75em;
-            font-size: 1.1em;
-            margin-top : -0.1em;
-        }
-    }
-</style>
-
+</div>
 
 
     <!-- Footer -->
