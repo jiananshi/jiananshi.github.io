@@ -13,11 +13,11 @@
 
     <title>
         
-          About - jiananshi
+          Etag 和 Last-Modified 的优先级 - jiananshi
         
     </title>
 
-    <link rel="canonical" href="https://shijianan.com/about/">
+    <link rel="canonical" href="https://shijianan.com/2019/03/10/etag-and-last-modified/">
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -148,238 +148,114 @@
 
 
     <!-- Main Content -->
-    <!-- Page Header -->
+    
+<!-- Image to hack wechat -->
+<!-- <img src="https://shijianan.com/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}" width="0" height="0"> -->
 
-    <header class="intro-header" style="background-image: url('///pic.yupoo.com/jiananshi/7f720625/9c9c26ad.jpg')">
-
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('///pic.yupoo.com/jiananshi/7f720625/9c9c26ad.jpg')
+        
+    }
+</style>
+<header class="intro-header">
     <div class="container">
-        <h1></h1>
         <div class="row">
-            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 ">
-                <div class="site-heading">
-                    <h1>About</h1>
-                    <!--<hr class="small">-->
-                    <span class="subheading"></span>
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                          <a class="tag" href="/tags/#http" title="http">http</a>
+                        
+                          <a class="tag" href="/tags/#cache" title="cache">cache</a>
+                        
+                    </div>
+                    <h1>Etag 和 Last-Modified 的优先级</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by jiananshi on
+                        2019-03-10
+                    </span>
                 </div>
             </div>
         </div>
     </div>
 </header>
 
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
 
-
-<!-- Main Content -->
-<div class="container">
-    <div class="row">
-        
-
-<!-- USE SIDEBAR -->
     <!-- Post Container -->
             <div class="
-                col-lg-8 col-lg-offset-1
-                col-md-8 col-md-offset-1
-                col-sm-12
-                col-xs-12
-                post-container
-            ">
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
 
-                <h2 id="About"><a href="#About" class="headerlink" title="About"></a>About</h2><p>大学肄业生，关注低欲望社会和三和大神，好外出取材，目前居无定所</p>
-<h2 id="Contact"><a href="#Contact" class="headerlink" title="Contact"></a>Contact</h2><p><a href="https://twitter.com/katncand1x" target="_blank" rel="noopener">Twitter</a><br>Email: jianan.shi93#gmail.com</p>
-<h2 id="Programming"><a href="#Programming" class="headerlink" title="Programming"></a>Programming</h2><p><a href="https://github.com/jiananshi" target="_blank" rel="noopener">Github</a><br><a href="https://leetcode-cn.com/jiananshi/" target="_blank" rel="noopener">LeetCode</a></p>
+                <p><a href="https://shijianan.com/2019/03/08/http-cache/">上一篇文章</a>中了解了常用的 HTTP 缓存头部，不难发现在不同工作阶段有的头部的工作会相互冲突，当发生冲突时服务器应当如何处理呢？</p>
+<h2 id="1-过期和验证"><a href="#1-过期和验证" class="headerlink" title="1. 过期和验证"></a>1. 过期和验证</h2><p>过期的优先级高于验证，如果 expires 和 cache-control 存在且没有过期，那么客户端并不会对 etag 和 last-modified 向服务端发起验证（expires 属于 HTTP 1.0，这里不针对他的优先级做赘述）</p>
+<h2 id="2-Etag-和-Last-Modified"><a href="#2-Etag-和-Last-Modified" class="headerlink" title="2. Etag 和 Last-Modified"></a>2. Etag 和 Last-Modified</h2><p><a href="https://www.ietf.org/rfc/rfc2616.txt" target="_blank" rel="noopener">rfc2616</a> 中专门有一章 13.3.4 讲解他俩之间的关系，总结来说如下：</p>
+<ul>
+<li>服务端应该发送 etag </li>
+<li>服务端应该发送 Last-Modified</li>
+<li>客户端应当验证 etag</li>
+<li>当只有 Last-Modified 的值的时候客户端应当验证</li>
+<li>如果 etag 和 Last-Modified 都有，两个都要验证</li>
+</ul>
 
 
-                <!-- 如果开启评论功能 -->
+                <hr>
+
                 
-                    <hr>
 
+                <ul class="pager">
                     
-
                     
-                    <!-- disqus 评论框 start -->
-                    <div class="comment">
-                        <div id="disqus_thread" class="disqus-thread"></div>
-                    </div>
-                    <!-- disqus 评论框 end -->
+                        <li class="next">
+                            <a href="/2019/03/08/http-cache/" data-toggle="tooltip" data-placement="top" title="HTTP 缓存">Next Post &rarr;</a>
+                        </li>
                     
+                </ul>
 
+                
 
-                    
-
-                    
-                    <!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
-                    <script type="text/javascript">
-                        /* * * CONFIGURATION VARIABLES * * */
-                        var disqus_shortname = "klamtine";
-                        var disqus_identifier = "https://shijianan.com/about/index.html";
-                        var disqus_url = "https://shijianan.com/about/index.html";
-
-                        (function() {
-                            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-                            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-                            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-                        })();
-
-
-                    </script>
-                    <!-- disqus 公共JS代码 end -->
-                    
-
-
-
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
                 
 
             </div>
+    <!-- Side Catalog Container -->
+        
+
     <!-- Sidebar Container -->
+
             <div class="
-                col-lg-3 col-lg-offset-0
-                col-md-3 col-md-offset-0
-                col-sm-12
-                col-xs-12
-                sidebar-container
-            ">
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
                 <!-- Featured Tags -->
                 
                 <section>
                     <!-- no hr -->
                     <h5><a href="/tags/">FEATURED TAGS</a></h5>
                     <div class="tags">
+                       
+                          <a class="tag" href="/tags/#http" title="http">http</a>
                         
-                            
-                        
-                            
-                            <a href="/tags/#javascript" title="javascript" rel="7">javascript</a>
-                            
-                        
-                            
-                        
-                            
-                            <a href="/tags/#security" title="security" rel="3">security</a>
-                            
-                        
-                            
-                        
-                            
-                            <a href="/tags/#css" title="css" rel="3">css</a>
-                            
-                        
-                            
-                            <a href="/tags/#http" title="http" rel="5">http</a>
-                            
-                        
-                            
-                            <a href="/tags/#cache" title="cache" rel="2">cache</a>
-                            
-                        
-                            
-                        
-                            
-                            <a href="/tags/#https" title="https" rel="4">https</a>
-                            
-                        
-                            
-                        
-                            
-                        
-                            
-                        
-                            
-                        
-                            
-                        
-                            
-                        
-                            
-                        
-                            
-                        
-                            
-                        
-                            
-                        
-                            
-                        
-                            
-                            <a href="/tags/#nginx" title="nginx" rel="2">nginx</a>
-                            
-                        
-                            
-                        
-                            
-                        
-                            
-                        
-                            
-                        
-                            
-                        
-                            
-                        
-                            
-                        
-                            
-                        
-                            
-                        
-                            
-                        
-                            
-                        
-                            
-                        
-                            
-                        
-                            
+                          <a class="tag" href="/tags/#cache" title="cache">cache</a>
                         
                     </div>
                 </section>
                 
-
-                <!-- Short About -->
-                <section class="visible-md visible-lg">
-                    <hr><h5><a href="/about/">ABOUT ME</a></h5>
-                    <div class="short-about">
-
-                        
-                            <img src="/img/avatar.jpg">
-                        
-
-                        
-
-                        <!-- SNS Link -->
-                        <ul class="list-inline">
-                            
-                            
-                                <li>
-                                    <a target="_blank" href="https://twitter.com/jiananshi">
-                                        <span class="fa-stack fa-lg">
-                                            <i class="fa fa-circle fa-stack-2x"></i>
-                                            <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
-                                        </span>
-                                    </a>
-                                </li>
-                            
-                            
-
-                            
-
-                            
-
-                            
-                                <li>
-                                    <a target="_blank" href="https://github.com/jiananshi">
-                                        <span class="fa-stack fa-lg">
-                                            <i class="fa fa-circle fa-stack-2x"></i>
-                                            <i class="fa fa-github fa-stack-1x fa-inverse"></i>
-                                        </span>
-                                    </a>
-                                </li>
-                            
-
-
-                            
-                        </ul>
-                    </div>
-                </section>
 
                 <!-- Friends Blog -->
                 
@@ -393,9 +269,66 @@
                 </ul>
                 
             </div>
-        
+
+        </div>
     </div>
-</div>
+</article>
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "klamtine";
+    var disqus_identifier = "https://shijianan.com/2019/03/10/etag-and-last-modified/";
+    var disqus_url = "https://shijianan.com/2019/03/10/etag-and-last-modified/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
 
 
     <!-- Footer -->

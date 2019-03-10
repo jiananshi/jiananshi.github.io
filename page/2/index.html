@@ -188,6 +188,31 @@
 
 <div class="post-preview">
 
+    <a href="/2017/07/08/csrf/">
+        <h2 class="post-title">
+            如何防范 CSRF 攻击
+        </h2>
+        <h3 class="post-subtitle">
+            
+        </h3>
+        <div class="post-content-preview">
+            CSRF 的全称是 Cross-site request forgery，中文翻译是跨站请求伪造，简单来说就是用户在登录 A 站点后假冒用户向站点 B 发送请求，如退出用户当前帐号等操作。
+下面这张图可以解释 CSRF 攻击的原理：
+
+用户访问站点 A 时，站点 A 用一个图片 html 标签就可以发起 CSRF 攻击：
+1&lt;img src="//yemengying.com/logo......
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by jiananshi on
+        2017-07-08
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+
     <a href="/2017/07/01/http-xff/">
         <h2 class="post-title">
             HTTP 头 X-FORWARDED-FOR
@@ -395,30 +420,6 @@ Session Cac......
 </div>
 <hr>
 
-<div class="post-preview">
-
-    <a href="/2017/04/08/nodejs-console-inspect/">
-        <h2 class="post-title">
-            Console in Nodejs
-        </h2>
-        <h3 class="post-subtitle">
-            
-        </h3>
-        <div class="post-content-preview">
-            在 JS 中 console 的作用类似其他语言的 print、echo，在开发调试过程中常常会用到。上周在工作中用 console 调试代码的时候遇到了 console 在 Nodejs 中一个神奇的行为，这里记录下。
-
-在一段业务逻辑中我拿到了数据库中的一条记录，类似：
-12345var record = &#123;  id: 1,  name: 'ymy',  weight: 49&......
-        </div>
-    </a>
-    <p class="post-meta">
-        Posted by jiananshi on
-        2017-04-08
-    </p>
-
-</div>
-<hr>
-
 
 
 <!-- Pager -->
@@ -476,9 +477,11 @@ Session Cac......
                             
                         
                             
+                            <a href="/tags/#http" title="http" rel="5">http</a>
+                            
                         
                             
-                            <a href="/tags/#http" title="http" rel="4">http</a>
+                            <a href="/tags/#cache" title="cache" rel="2">cache</a>
                             
                         
                             
@@ -506,11 +509,11 @@ Session Cac......
                             
                         
                             
+                        
+                            
+                        
+                            
                             <a href="/tags/#nginx" title="nginx" rel="2">nginx</a>
-                            
-                        
-                            
-                        
                             
                         
                             

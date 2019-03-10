@@ -188,6 +188,28 @@
 
 <div class="post-preview">
 
+    <a href="/2017/01/29/serviceworker-inject-response/">
+        <h2 class="post-title">
+            Service Worker：拦截请求
+        </h2>
+        <h3 class="post-subtitle">
+            
+        </h3>
+        <div class="post-content-preview">
+            Service Worker 为浏览器提供了缓存、拦截请求、推送消息、离线应用等帮助开发者为 webapp 提供接近 native app 体验的功能，本文主要讨论拦截 HTTP 请求部分
+创建一个 serviceWorkerserviceWorker 的代码需要放置在一个 JS 文件里，通过 serviceWorker.register 注册后才可以使用，在注册之前我们首先需要判断浏览器是......
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by jiananshi on
+        2017-01-29
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+
     <a href="/2017/01/18/css-bottom-footer/">
         <h2 class="post-title">
             不定高度内容固定底部 footer
@@ -403,34 +425,6 @@ Webp（发音 webpy）是谷歌创造的一种是支持有损压缩和无损压�
 </div>
 <hr>
 
-<div class="post-preview">
-
-    <a href="/2017/01/05/docker-intro/">
-        <h2 class="post-title">
-            Docker 101
-        </h2>
-        <h3 class="post-subtitle">
-            
-        </h3>
-        <div class="post-content-preview">
-            记得两年前就接触过 Docker 了，当时觉得和自己毫不相干一直没看，后来到上海工作接触了代码部署、测试环境/PPE 环境等等，顿然醒悟当年如果学了 Docker 能减少多少折腾环境的工作量，这里写一下 Docker 的基本架构和一些常用操作。
-
-Docker 有哪些好处
-将应用同环境一同打包分发
-创建沙盒环境
-相比 VM 性能开销小很多…
-
-至少「我这里没问题呀」这种情况可以被消灭了 😅......
-        </div>
-    </a>
-    <p class="post-meta">
-        Posted by jiananshi on
-        2017-01-05
-    </p>
-
-</div>
-<hr>
-
 
 
 <!-- Pager -->
@@ -488,9 +482,11 @@ Docker 有哪些好处
                             
                         
                             
+                            <a href="/tags/#http" title="http" rel="5">http</a>
+                            
                         
                             
-                            <a href="/tags/#http" title="http" rel="4">http</a>
+                            <a href="/tags/#cache" title="cache" rel="2">cache</a>
                             
                         
                             
@@ -518,11 +514,11 @@ Docker 有哪些好处
                             
                         
                             
+                        
+                            
+                        
+                            
                             <a href="/tags/#nginx" title="nginx" rel="2">nginx</a>
-                            
-                        
-                            
-                        
                             
                         
                             

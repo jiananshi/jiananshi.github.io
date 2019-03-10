@@ -188,6 +188,29 @@
 
 <div class="post-preview">
 
+    <a href="/2019/03/10/etag-and-last-modified/">
+        <h2 class="post-title">
+            Etag 和 Last-Modified 的优先级
+        </h2>
+        <h3 class="post-subtitle">
+            
+        </h3>
+        <div class="post-content-preview">
+            上一篇文章中了解了常用的 HTTP 缓存头部，不难发现在不同工作阶段有的头部的工作会相互冲突，当发生冲突时服务器应当如何处理呢？
+1. 过期和验证过期的优先级高于验证，如果 expires 和 cache-control 存在且没有过期，那么客户端并不会对 etag 和 last-modified 向服务端发起验证（expires 属于 HTTP 1.0，这里不针对他的优先级做赘述）
+2. ......
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by jiananshi on
+        2019-03-10
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+
     <a href="/2019/03/08/http-cache/">
         <h2 class="post-title">
             HTTP 缓存
@@ -389,31 +412,6 @@ XSS 最主要的方式是通过服务端没有对用户上传的内容进行 编
 </div>
 <hr>
 
-<div class="post-preview">
-
-    <a href="/2017/07/08/csrf/">
-        <h2 class="post-title">
-            如何防范 CSRF 攻击
-        </h2>
-        <h3 class="post-subtitle">
-            
-        </h3>
-        <div class="post-content-preview">
-            CSRF 的全称是 Cross-site request forgery，中文翻译是跨站请求伪造，简单来说就是用户在登录 A 站点后假冒用户向站点 B 发送请求，如退出用户当前帐号等操作。
-下面这张图可以解释 CSRF 攻击的原理：
-
-用户访问站点 A 时，站点 A 用一个图片 html 标签就可以发起 CSRF 攻击：
-1&lt;img src="//yemengying.com/logo......
-        </div>
-    </a>
-    <p class="post-meta">
-        Posted by jiananshi on
-        2017-07-08
-    </p>
-
-</div>
-<hr>
-
 
 
 <!-- Pager -->
@@ -467,9 +465,11 @@ XSS 最主要的方式是通过服务端没有对用户上传的内容进行 编
                             
                         
                             
+                            <a href="/tags/#http" title="http" rel="5">http</a>
+                            
                         
                             
-                            <a href="/tags/#http" title="http" rel="4">http</a>
+                            <a href="/tags/#cache" title="cache" rel="2">cache</a>
                             
                         
                             
@@ -497,11 +497,11 @@ XSS 最主要的方式是通过服务端没有对用户上传的内容进行 编
                             
                         
                             
+                        
+                            
+                        
+                            
                             <a href="/tags/#nginx" title="nginx" rel="2">nginx</a>
-                            
-                        
-                            
-                        
                             
                         
                             
