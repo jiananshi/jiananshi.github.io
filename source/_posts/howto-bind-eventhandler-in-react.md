@@ -84,9 +84,9 @@ render(<App />, document.querySelector('#app'));
 
 盗了 [dailyjs]([Demystifying Memory Usage using ES6 React Classes – DailyJS – Mediumhttps://medium.com/dailyjs/demystifying-memory-usage-using-es6-react-classes-d9d904bc4557) 上两张图表示这种方式是如何节省内存的（虚线框代表从父类继承的方法，实线框代表占用内存的部分）：
 
-![1](https://oiw32lugp.qnssl.com/1.png)
+![1](//pic.yupoo.com/jiananshi/8c2db9bc/16b5908c.png)
 
-![2](https://oiw32lugp.qnssl.com/2.png)
+![2](//pic.yupoo.com/jiananshi/0f49b19d/45f41c33.png)
 
 每次都要在初始化的时候写一坨 `bind` 确实很恶心，可以参考 autobind 这个 decorator 用 babel 转一波 ，在 React 中绑定一个事件处理函数的终极方案是：
 

