@@ -368,8 +368,9 @@ devDepende......
             
         </h3>
         <div class="post-content-preview">
-            几个月前去 TB 面试的时候被问到过关于 debounce，当时没能答上来。回来翻了下源码，发现其实就是我们在页面滚动和自动搜索（用户停止输入后再发送请求）时常用到的概念。另外 Throttle 和 debounce 意思相近但容易让人混淆，这里索性一起写一下。
-Debouncedebounce 是指给定一个时间，只有过了这个时间才会执行这个函数，这期间调用这个函数会重置计时器（并清除上一个......
+            Debounce and ThrottleDebounce 和 Throttle 是两个很相似的可以让我们控制单位时间内函数执行次数的设计，这篇文章主要写一下他们的原理和适用场景。
+Debounce
+Debounce 限制函数在规定的操作间隔时间只运行一次，如果在不到时间的情况下仍接收到执行操作，那么函数不会执行并且重新计时。这么说可能有点绕，结合实际应用场景来理解：我们有一个输入框会根据用......
         </div>
     </a>
     <p class="post-meta">
@@ -466,9 +467,13 @@ Debouncedebounce 是指给定一个时间，只有过了这个时间才会执行
                             
                         
                             
-                            <a href="/tags/#javascript" title="javascript" rel="7">javascript</a>
+                            <a href="/tags/#javascript" title="javascript" rel="8">javascript</a>
                             
                         
+                            
+                        
+                            
+                            <a href="/tags/#css" title="css" rel="3">css</a>
                             
                         
                             
@@ -478,7 +483,13 @@ Debouncedebounce 是指给定一个时间，只有过了这个时间才会执行
                             
                         
                             
-                            <a href="/tags/#css" title="css" rel="3">css</a>
+                        
+                            
+                            <a href="/tags/#http" title="http" rel="5">http</a>
+                            
+                        
+                            
+                            <a href="/tags/#cache" title="cache" rel="2">cache</a>
                             
                         
                             
@@ -490,11 +501,9 @@ Debouncedebounce 是指给定一个时间，只有过了这个时间才会执行
                             
                         
                             
-                            <a href="/tags/#http" title="http" rel="5">http</a>
-                            
                         
                             
-                            <a href="/tags/#cache" title="cache" rel="2">cache</a>
+                        
                             
                         
                             
@@ -511,14 +520,6 @@ Debouncedebounce 是指给定一个时间，只有过了这个时间才会执行
                         
                             
                             <a href="/tags/#nginx" title="nginx" rel="2">nginx</a>
-                            
-                        
-                            
-                        
-                            
-                        
-                            
-                        
                             
                         
                             
