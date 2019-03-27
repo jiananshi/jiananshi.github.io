@@ -2,75 +2,110 @@
 title: Debounce and Throttle
 date: 2016-10-19 09:38:54
 tags:
+  - javascript
 ---
 
-几个月前去 TB 面试的时候被问到过关于 debounce，当时没能答上来。回来翻了下源码，发现其实就是我们在页面滚动和自动搜索（用户停止输入后再发送请求）时常用到的概念。另外 Throttle 和 debounce 意思相近但容易让人混淆，这里索性一起写一下。
+# Debounce and Throttle
+Debounce 和 Throttle 是两个很相似的可以让我们控制单位时间内函数执行次数的设计，这篇文章主要写一下他们的原理和适用场景。
 
-## Debounce
+## Debounce 
+![img](http://pic.yupoo.com/jiananshi/ac7553b5/7a3aa49f.png)
 
-debounce 是指给定一个时间，只有过了这个时间才会执行这个函数，这期间调用这个函数会重置计时器（并清除上一个任务）：
+Debounce 限制函数在规定的操作间隔时间只运行一次，如果在不到时间的情况下仍接收到执行操作，那么函数不会执行并且重新计时。这么说可能有点绕，结合实际应用场景来理解：我们有一个输入框会根据用户输入实时发送请求获取联想词，我们不希望用户每次敲击键盘都发送请求，理想情况是用户停止输入 Xms 后才发送请求，并且如果在这期间用户继续敲击键盘则重新计时，实现如下：
 
-```javascript
-function debounce(func, delay = 0, immediate) {
-  let timer;
+```js
+function debounce(func, delay = 0) {
+  let timer, result;
 
-  function execute(...args) {
-    timer = setTimeout(() => {
-      func(...args);
-      timer = null;
-    }, delay);
+  function execute(context, args) {
+    timeout = null;
+    if (args) result = func.apply(context, args);
   }
 
-  return (...args) => {
-    if (timer) {
-      clearTimeout(timer);
-      execute(...args);
-    } else {
-      if (immediate) return func(...args);
-      execute(...args);
-    }
-  };
+  function debounced(...args) {
+    if (timer) clearTimeout(timer);
+    let self = this;
+    timeout = setTimeout(function() {
+      execute(self, args);
+    }, delay);
+    return result;
+  }
+
+  return debounced;
 }
 ```
 
-debounce 适合的场景有页面滚动加载这种执行频繁但操作可以集中的场景
+存在一个问题就是函数不会立刻执行，而是要经过指定时间间隔后才会第一次执行，很多情况下我们不希望这样，做一个优化：
+
+![img](http://pic.yupoo.com/jiananshi/82015895/15b390a2.png)
+
+```js
+function debounce(func, delay = 0, immediate) { // 新增 immediate 参数
+  let timer, result;
+
+  function execute(context, args) {
+    timeout = null;
+    if (args) result = func.apply(context, args);
+  }
+
+  function debounced(...args) {
+    if (timer) clearTimeout(timer);
+    if (immediate) { // immediate 为 true 时检查是否可以立即执行
+      let callNow = !immediate;
+      timeout = setTimeout(execute, delay);
+      if (callNow) result = func.apply(context, args);
+    } else {
+      let self = this;
+      timeout = setTimeout(function() {
+        execute(self, args);
+      }, delay);
+    }
+    return result;
+  }
+
+  return debounced;
+}
+```
 
 ## Throttle
+Throttle 的功能是确保函数在 Xms 内只执行一次，同 debounce 不同的是它提供的是一个时间窗口，在窗口期内额外的调用并不会重置计时，throttle 只是单纯的无视了它，实现如下：
 
-Throttle，给定一个窗口时间，在这个窗口期内最多只能被执行一次，窗口期间内无论调用多少次这歌函数都不会执行，也不会重置计数器。实现也是非常简单：
-
-```javascript
-function throttle(func, wait) {
-  let timer;
+```js
+function throttle(func, delay) {
+  let timer, context, result;
   let previous = 0;
 
-  return (...args) => {
-    const now = Date.now();
-    const remaining = now - (previous + wait);
+  function execute(...args) {
+    previous = Date.now();
+    timeout = null;
+    result = func.apply(context, args);
+  }
 
-    if (remaining > 0) {
-      func(...args);
-      previous = now;
-    } else {
-      if (timer) clearTimeout(timer);
-      timer = setTimeout(() => {
-        func(...args);
-        previous = now;
+  function throttled(args) {
+    let now = Date.now();
+    let remaining = delay - (now - previous);
+    context = this;
+    if (remaining <= 0 || remaing > delay) {
+      if (timer) {
+        clearTimeout(timer);
         timer = null;
-      }, wait);
+      }
+      previous = now;
+      result = func.apply(context, args);
+    } else if (!timer) {
+      timeout = setTimeout(function() {
+        execute(...args);
+      }, remaining);
     }
-  };
+    
+    return result;
+  }
+
+  return throttled;
 }
 ```
 
-很明显，throttle 非常适合用于 API 层，某 IP 或用户对于某个请求限制在比如 1 分钟内 100 次，防止无效调用或者恶意攻击（这个要在服务器层面做了）
+## Reference
+[underscore.js](https://underscorejs.org/docs/underscore.html)
+[css-tricks](https://css-tricks.com/debouncing-throttling-explained-examples/)
 
-## 区别
-
-即使代码上差别很大，没遇到过对应场景的人可能还是很难理解和区别它们。我们用举个例子：有一个老司机要发车了 magenet:jsad897dfhdsjkawd08sakl，他可以选择每 10 分钟发一班车车上没人就不发，他也可以每隔 15 分钟发一班车，中间有人来了就重新再等 15 分钟。
-
-所以假设我们在自动搜索里用 throttle，那么用户输入停止后搜出来的结果只会是第一个单词为关键词，这就不符合用户的心理预期了。
-
-## 参考
-
-[underscore.js](https://github.com/jashkenas/underscore/blob/master/underscore.js)
