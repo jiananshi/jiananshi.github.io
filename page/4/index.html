@@ -188,6 +188,32 @@
 
 <div class="post-preview">
 
+    <a href="/2017/02/05/javascript-cache-api/">
+        <h2 class="post-title">
+            Javascript Cache API
+        </h2>
+        <h3 class="post-subtitle">
+            
+        </h3>
+        <div class="post-content-preview">
+            
+localStorage 和 sessionStorage 相信大家都用过吧，之前学习 ServiceWorker 的时候还接触到了 CacheStorage，这里把自己的理解分享出来
+
+创建一个 CacheStorage 实例首先我们要检测浏览器是否支持 Cache API：
+assert(‘caches’ in window)
+接下来我们要创建一个 CacheStorage 对象供我们......
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by jiananshi on
+        2017-02-05
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+
     <a href="/2017/01/29/serviceworker-inject-response/">
         <h2 class="post-title">
             Service Worker：拦截请求
@@ -402,29 +428,6 @@ Iterators，generators 和 array comprehensions；我很激动看到 Javascript 
 </div>
 <hr>
 
-<div class="post-preview">
-
-    <a href="/2017/01/06/webp/">
-        <h2 class="post-title">
-            开始使用 Webp 图片
-        </h2>
-        <h3 class="post-subtitle">
-            
-        </h3>
-        <div class="post-content-preview">
-            
-Webp 是一种图片格式，记得刚进饿厂的时候 gogu 就在主站推了，当时没重视（其实当年 gogu 就在搞 Reactive 和 FP，当然这都是后来回头看了，其中也有没成的 😂  ）
-Webp（发音 webpy）是谷歌创造的一种是支持有损压缩和无损压缩的图片文件格式，无损压缩后的 Webp 比 png 文件少了 26％ 的体积，有损压缩后的WebP图片相比于等效质量指标的JPEG图片......
-        </div>
-    </a>
-    <p class="post-meta">
-        Posted by jiananshi on
-        2017-01-06
-    </p>
-
-</div>
-<hr>
-
 
 
 <!-- Pager -->
@@ -472,13 +475,13 @@ Webp（发音 webpy）是谷歌创造的一种是支持有损压缩和无损压�
                             
                         
                             
-                            <a href="/tags/#css" title="css" rel="3">css</a>
-                            
-                        
-                            
                         
                             
                             <a href="/tags/#security" title="security" rel="3">security</a>
+                            
+                        
+                            
+                            <a href="/tags/#css" title="css" rel="3">css</a>
                             
                         
                             
@@ -519,6 +522,10 @@ Webp（发音 webpy）是谷歌创造的一种是支持有损压缩和无损压�
                         
                             
                             <a href="/tags/#nginx" title="nginx" rel="2">nginx</a>
+                            
+                        
+                            
+                        
                             
                         
                             

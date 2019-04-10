@@ -188,6 +188,30 @@
 
 <div class="post-preview">
 
+    <a href="/2017/05/25/http-cache-age-calc/">
+        <h2 class="post-title">
+            HTTP 缓存失效的计算
+        </h2>
+        <h3 class="post-subtitle">
+            
+        </h3>
+        <div class="post-content-preview">
+            HTTP 1.1 中要求服务端为每个请求设置一个 Date  响应头，表示这个资源生成的时间。当从缓存中获取资源时，HTTP 1.1 会在每个资源上设置 Age 头，它的值是一个数字，表示资源已经存在的时间（或是距离上一次同服务器验证有效性的时间）
+下图是我在百度贴吧的请求里截了张图：
+
+根据前文提到的信息，这个资源的创建时间是 2017 年 5月 25 日 00:24:14，资源存活时间是......
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by jiananshi on
+        2017-05-25
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+
     <a href="/2017/04/08/nodejs-console-inspect/">
         <h2 class="post-title">
             Console in Nodejs
@@ -399,32 +423,6 @@ Cookie 既然可以为我们保存客户端数据，自然它是不能泄漏给�
 </div>
 <hr>
 
-<div class="post-preview">
-
-    <a href="/2017/02/05/javascript-cache-api/">
-        <h2 class="post-title">
-            Javascript Cache API
-        </h2>
-        <h3 class="post-subtitle">
-            
-        </h3>
-        <div class="post-content-preview">
-            
-localStorage 和 sessionStorage 相信大家都用过吧，之前学习 ServiceWorker 的时候还接触到了 CacheStorage，这里把自己的理解分享出来
-
-创建一个 CacheStorage 实例首先我们要检测浏览器是否支持 Cache API：
-assert(‘caches’ in window)
-接下来我们要创建一个 CacheStorage 对象供我们......
-        </div>
-    </a>
-    <p class="post-meta">
-        Posted by jiananshi on
-        2017-02-05
-    </p>
-
-</div>
-<hr>
-
 
 
 <!-- Pager -->
@@ -472,13 +470,13 @@ assert(‘caches’ in window)
                             
                         
                             
-                            <a href="/tags/#css" title="css" rel="3">css</a>
-                            
-                        
-                            
                         
                             
                             <a href="/tags/#security" title="security" rel="3">security</a>
+                            
+                        
+                            
+                            <a href="/tags/#css" title="css" rel="3">css</a>
                             
                         
                             
@@ -519,6 +517,10 @@ assert(‘caches’ in window)
                         
                             
                             <a href="/tags/#nginx" title="nginx" rel="2">nginx</a>
+                            
+                        
+                            
+                        
                             
                         
                             
